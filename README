@@ -2,7 +2,7 @@
 
 A powerfull lighweight markup language
 
-This is version 20140125.
+This is version 20140125a.
 
 == General notes ==
 
@@ -23,7 +23,7 @@ Link (?)          [[label url]]
 Bold              **words**
 Italic            //words//
 Underline         __words__
-Strike            --words--
+Strike            ~~words~~
 Monospaced        ``words``
 
 Table             +-----------------------------+ (optionnal)
