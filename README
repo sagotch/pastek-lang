@@ -4,6 +4,10 @@ A powerfull lighweight markup language
 
 This is version 20140125.
 
+== General notes ==
+
+- Spaces at the beginning of a line are meaningless and will be skiped.
+
 == Syntax ==
 
 Title             = words = (closing '=' are optionnal)
@@ -12,7 +16,6 @@ List              # words
                     -- words
                        --- words
                   # words
-                  (identation is optionnal, number of symbols define depth)
                     
 Image (?)         [[filename.jpg]]
 Link (?)          [[label url]]
@@ -36,7 +39,7 @@ Subscript         _i (one sign)
 Superscript       ^i (one sign)
                   ^{index} (several signs)
 
-Codeblock         ```
+Codeblock         ```A
                   let triple_backquoted =
                     "Code block"
                   ```
