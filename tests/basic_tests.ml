@@ -34,12 +34,33 @@ let block_suit _ =
      Paragraph [Plain "Dolor sit amet."]]
     (parse "=Lorem\n  ==  Ipsum\n\nDolor sit amet.")
 
+let emphasis _ =
+  assert_equal
+    [Paragraph [Bold [Plain "Lorem"]; Plain " ipsum."]]
+    (parse "**Lorem** ipsum.");
+  assert_equal
+    [Paragraph [Plain "Lorem "; Italic [Plain "ipsum"]; Plain "."]]
+    (parse "Lorem //ipsum//.");
+  assert_equal
+    [Paragraph [Plain "Lorem "; Underline [Plain "ipsum dolor"]; Plain " sit."]]
+    (parse "Lorem __ipsum dolor__ sit.");
+  assert_equal
+    [Paragraph [Plain "Lorem "; Strike [Plain "ipsum."]]]
+    (parse "Lorem ~~ipsum.~~");
+  assert_equal
+    [Title (3, [Bold [Italic [Plain "Lo"; Strike [Plain "rem"]];
+                      Plain " ipsum."]])]
+    (parse "  ===  **//Lo~~rem~~// ipsum.**");
+  assert_raises
+    Parser.Error
+    (fun () -> (parse  "  ===  **//Lorem** ipsum.//"))
 
 let suite = 
   "Suite" >:::
-    ["Title test" >:: simple_title;
-     "Paragraph test" >:: simple_paragraph;
-     "Block Suit" >:: block_suit]
+    ["Title" >:: simple_title;
+     "Paragraph" >:: simple_paragraph;
+     "Block suit" >:: block_suit;
+     "Emphasis text" >:: emphasis]
 
 let () =
   run_test_tt_main suite
