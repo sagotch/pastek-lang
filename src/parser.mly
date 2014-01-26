@@ -4,6 +4,7 @@
 
 %token<int> TITLE
 %token<string> PLAIN
+%token<char> SUP SUB
 %token BOLD ITALIC UNDERLINE STRIKE EMPTYLINE
 %token EOF
 
@@ -68,4 +69,6 @@ strike:
 
 inline(param):
 | PLAIN { Plain $1 }
+| SUB { Sub $1 }
+| SUP { Sup $1 }
 | param { $1 }

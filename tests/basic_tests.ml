@@ -55,12 +55,21 @@ let emphasis _ =
     Parser.Error
     (fun () -> (parse  "  ===  **//Lorem** ipsum.//"))
 
+let sup_sub _ =
+  assert_equal
+    [Paragraph [Plain "Lorem"; Sup '2'; Plain " ipsum."]]
+    (parse "Lorem^2 ipsum.");
+  assert_equal
+    [Paragraph [Plain "Lorem"; Sub 'i'; Plain " ipsum."]]
+    (parse "Lorem_i ipsum.")
+
 let suite = 
   "Suite" >:::
     ["Title" >:: simple_title;
      "Paragraph" >:: simple_paragraph;
      "Block suit" >:: block_suit;
-     "Emphasis text" >:: emphasis]
+     "Emphasis text" >:: emphasis;
+     "Superscript and subscript" >:: sup_sub]
 
 let () =
   run_test_tt_main suite

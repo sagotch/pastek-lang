@@ -34,6 +34,10 @@ and line acc read_buf = parse
   { line (flush_and_add acc read_buf UNDERLINE) (Buffer.create 15) lexbuf }
 | "~~"
   { line (flush_and_add acc read_buf STRIKE) (Buffer.create 15) lexbuf }
+| '^' (_ as c)
+  { line (flush_and_add acc read_buf (SUP c)) (Buffer.create 15) lexbuf }
+| '_' (_ as c)
+  { line (flush_and_add acc read_buf (SUB c)) (Buffer.create 15) lexbuf }
 | '\n'
   { line_beginning (flush acc read_buf) lexbuf }
 | _ as c
