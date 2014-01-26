@@ -63,13 +63,22 @@ let sup_sub _ =
     [Paragraph [Plain "Lorem"; Sub 'i'; Plain " ipsum."]]
     (parse "Lorem_i ipsum.")
 
+let inline_code _ =
+  assert_equal
+    [Paragraph [InlineCode "Lorem"; Plain " ipsum."]]
+    (parse "``Lorem`` ipsum.");
+  assert_equal
+    [Paragraph [InlineCode "Lorem ipsum"]]
+    (parse "``Lorem \nipsum``")
+
 let suite = 
   "Suite" >:::
     ["Title" >:: simple_title;
      "Paragraph" >:: simple_paragraph;
      "Block suit" >:: block_suit;
      "Emphasis text" >:: emphasis;
-     "Superscript and subscript" >:: sup_sub]
+     "Superscript and subscript" >:: sup_sub;
+     "Inline code" >:: inline_code]
 
 let () =
   run_test_tt_main suite

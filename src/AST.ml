@@ -6,6 +6,7 @@ type document = block list
 
  and inline =
    | Plain of string
+   | InlineCode of string
    | Bold of inline list
    | Italic of inline list
    | Underline of inline list
@@ -26,6 +27,7 @@ and string_of_inlines l =
 
 and string_of_inline = function
   | Plain txt -> "Plain \"" ^ txt ^ "\""
+  | InlineCode txt -> "InlineCode \"" ^ txt ^ "\""
   | Bold b -> "Bold (" ^ string_of_inlines b ^ ")"
   | Italic i -> "Italic (" ^ string_of_inlines i ^ ")"
   | Underline u -> "Underline (" ^ string_of_inlines u ^ ")"

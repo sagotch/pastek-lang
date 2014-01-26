@@ -3,7 +3,7 @@
 %}
 
 %token<int> TITLE
-%token<string> PLAIN
+%token<string> PLAIN INLINE_CODE
 %token<char> SUP SUB
 %token BOLD ITALIC UNDERLINE STRIKE EMPTYLINE
 %token EOF
@@ -46,6 +46,7 @@ regular:
 | ITALIC inline(italic)+ ITALIC { Italic $2 }
 | UNDERLINE inline(underline)+ UNDERLINE { Underline $2 }
 | STRIKE inline(strike)+ STRIKE { Strike $2 }
+| INLINE_CODE { InlineCode $1 }
 
 bold:
 | ITALIC inline(italic)+ ITALIC { Italic $2 }

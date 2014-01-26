@@ -34,6 +34,8 @@ and line acc read_buf = parse
   { line (flush_and_add acc read_buf UNDERLINE) (Buffer.create 15) lexbuf }
 | "~~"
   { line (flush_and_add acc read_buf STRIKE) (Buffer.create 15) lexbuf }
+| "``"
+  { inline_code (flush acc read_buf) (Buffer.create 15) lexbuf }
 | '^' (_ as c)
   { line (flush_and_add acc read_buf (SUP c)) (Buffer.create 15) lexbuf }
 | '_' (_ as c)
@@ -44,4 +46,15 @@ and line acc read_buf = parse
   { Buffer.add_char read_buf c;
     line acc read_buf lexbuf }
 | eof { List.rev @@ flush acc read_buf }
+
+and inline_code acc read_buf = parse
+| "``"
+  { line (INLINE_CODE (Buffer.contents read_buf) :: acc)
+    (Buffer.create 15) lexbuf }
+| '\n'
+  { inline_code acc read_buf lexbuf }
+| _ as c
+  { Buffer.add_char read_buf c;
+    inline_code acc read_buf lexbuf }
+
 {}
