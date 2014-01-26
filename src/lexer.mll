@@ -26,6 +26,8 @@ rule line_beginning acc = parse
 (*** REGULAR LINES ***)
 
 and line acc read_buf = parse
+| "```" '\n'?
+  { code_block acc (Buffer.create 15) lexbuf }
 | "**"
   { line (flush_and_add acc read_buf BOLD) (Buffer.create 15) lexbuf }
 | "//"
@@ -56,5 +58,12 @@ and inline_code acc read_buf = parse
 | _ as c
   { Buffer.add_char read_buf c;
     inline_code acc read_buf lexbuf }
+
+and code_block acc read_buf = parse
+| '\n'? "```" '\n'?
+  { line_beginning (CODE_BLOCK (Buffer.contents read_buf) :: acc) lexbuf }
+| _ as c
+  { Buffer.add_char read_buf c;
+    code_block acc read_buf lexbuf }
 
 {}

@@ -3,6 +3,7 @@ type document = block list
  and block =
    | Title of int * inline list
    | Paragraph of inline list
+   | CodeBlock of string
 
  and inline =
    | Plain of string
@@ -21,6 +22,7 @@ and string_of_block = function
   | Title(i, c) -> "Title("  ^ string_of_int i ^ ", "
                    ^ string_of_inlines c ^ ")"
   | Paragraph p -> "Paragraph(" ^ string_of_inlines p ^ ")"
+  | CodeBlock txt -> "CodeBlock \"" ^ txt ^ "\""
 
 and string_of_inlines l = 
   "[" ^ String.concat ";" (List.map string_of_inline l) ^ "]"

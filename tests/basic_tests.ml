@@ -71,6 +71,14 @@ let inline_code _ =
     [Paragraph [InlineCode "Lorem ipsum"]]
     (parse "``Lorem \nipsum``")
 
+let code_block _ =
+  assert_equal
+    [CodeBlock "let lorem = ipsum"]
+    (parse "```let lorem = ipsum```");
+  assert_equal
+    [CodeBlock "let lorem = ipsum\nand ipsum = lorem"]
+    (parse "```\nlet lorem = ipsum\nand ipsum = lorem\n```")
+
 let suite = 
   "Suite" >:::
     ["Title" >:: simple_title;
@@ -78,7 +86,8 @@ let suite =
      "Block suit" >:: block_suit;
      "Emphasis text" >:: emphasis;
      "Superscript and subscript" >:: sup_sub;
-     "Inline code" >:: inline_code]
+     "Inline code" >:: inline_code;
+     "Code block" >:: code_block]
 
 let () =
   run_test_tt_main suite

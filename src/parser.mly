@@ -3,7 +3,7 @@
 %}
 
 %token<int> TITLE
-%token<string> PLAIN INLINE_CODE
+%token<string> PLAIN INLINE_CODE CODE_BLOCK
 %token<char> SUP SUB
 %token BOLD ITALIC UNDERLINE STRIKE EMPTYLINE
 %token EOF
@@ -18,7 +18,7 @@ document:
 (*** BLOCKS ***)
 
 block_list:
-| bl=header | bl=paragraph | bl=eof { bl }
+| bl=header | bl=paragraph | bl=code_block | bl=eof { bl }
 
 eof:
 | EOF { [] }
@@ -30,14 +30,20 @@ header:
 
 header_f:
 | EMPTYLINE+ hf=paragraph { hf }
-| EMPTYLINE* hf=header | EMPTYLINE* hf=eof { hf }
+| EMPTYLINE* hf=header | EMPTYLINE* hf=code_block | EMPTYLINE* hf=eof { hf }
 
 paragraph:
 | inline(regular)+ paragraph_f { Paragraph $1 :: $2 }
 
 paragraph_f:
-| EMPTYLINE* pf=header | EMPTYLINE* pf=eof { pf }
+| EMPTYLINE* pf=header | EMPTYLINE* pf=eof | EMPTYLINE* pf=code_block { pf }
 | EMPTYLINE+ paragraph { $2 }
+
+code_block:
+| CODE_BLOCK code_block_f { CodeBlock $1 :: $2 }
+
+code_block_f:
+| EMPTYLINE* block_list { $2 }
 
 (*** INLINE ELEMENTS ***)
 
