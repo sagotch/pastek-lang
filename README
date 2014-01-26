@@ -39,7 +39,7 @@ Subscript         _i (one sign)
 Superscript       ^i (one sign)
                   ^{index} (several signs)
 
-Codeblock         ```A
+Codeblock         ```
                   let triple_backquoted =
                     "Code block"
                   ```
