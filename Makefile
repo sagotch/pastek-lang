@@ -1,5 +1,5 @@
 OCAMLBUILD = ocamlbuild
-FLAGS := -use-ocamlfind -yaccflags --explain -use-menhir
+FLAGS := -use-ocamlfind -yaccflags --explain -use-menhir -lib str
 INC := -I src
 
 TEST_FLAGS = $(FLAGS) -pkgs oUnit

@@ -16,6 +16,15 @@ let parse str =
 
 let simple_title _ =
   assert_equal
+    [Title(3, [Plain "Lorem"])]
+    (parse "=== Lorem === ");
+  assert_equal
+    [Title(3, [Plain "Lorem ="])]
+    (parse "=== Lorem ==== ");
+  assert_equal
+    [Title(3, [Plain "Lorem ="])]
+    (parse "=== Lorem = === ");
+  assert_equal
     [Title(1, [Plain "Lorem"])]
     (parse "= Lorem")
 

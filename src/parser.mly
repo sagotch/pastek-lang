@@ -1,5 +1,6 @@
 %{
   open AST
+  open Str
 %}
 
 %token<int> TITLE
@@ -24,9 +25,19 @@ eof:
 | EOF { [] }
 
 (* NB: with this configuration, headers have to be separated from
- paragraphs with an empty line. *)
+ paragraphs with an empty line.
+ NB: This implentation add the Str library dependancy *)
 header:
-| TITLE inline(regular)+ header_f { Title ($1, $2) :: $3 }
+| TITLE inline(regular)+ header_f
+  { let l = List.rev $2 in
+    let h = List.hd l and q = List.tl l in
+    match h with
+    | Plain s ->
+       (try let i =
+              search_forward (regexp (" *" ^ String.make $1 '=' ^ " *$")) s 0 
+            in Title ($1, List.rev (Plain (String.sub s 0 i) :: q)) :: $3
+        with Not_found -> Title ($1, $2) :: $3)
+    | _ -> Title ($1, $2) :: $3 }
 
 header_f:
 | EMPTYLINE+ hf=paragraph { hf }
