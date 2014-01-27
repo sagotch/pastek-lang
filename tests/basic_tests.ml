@@ -110,6 +110,17 @@ let source_block _ =
     [SourceBlock "<p>Lorem ipsum.</p>}}}"]
     (parse "{{{\n<p>Lorem ipsum.</p>\n}}}}}}")
 
+let math _ =
+  assert_equal
+    [Paragraph [InlineMath [Plain "Lorem"; Sup '2'; Plain " ipsum."]]]
+    (parse "$$Lorem^2 ipsum.$$");
+  assert_equal
+    [MathBlock [Plain "Lorem"; Sub 'i'; Plain " ipsum."]]
+    (parse "$$$Lorem_i ipsum.$$$");
+  assert_raises
+    (Failure "TODO: raise Parser.Error")
+    (fun () -> (parse "$$Lorem **ipsum**$$"))
+
 let suite = 
   "Suite" >:::
     ["Title" >:: simple_title;
@@ -120,7 +131,8 @@ let suite =
      "Inline code" >:: inline_code;
      "Code block" >:: code_block;
      "Inline source" >:: inline_source;
-     "Source block" >:: source_block]
+     "Source block" >:: source_block;
+     "Math" >:: math]
 
 let () =
   run_test_tt_main suite

@@ -30,6 +30,8 @@ and line acc read_buf = parse
   { code_block (flush acc read_buf) (Buffer.create 15) lexbuf }
 | "{{{" '\n'?
   { source_block (flush acc read_buf) (Buffer.create 15) lexbuf }
+| "$$$" '\n'?
+  { line (flush_and_add acc read_buf MATH_BLOCK) (Buffer.create 15) lexbuf }
 | "**"
   { line (flush_and_add acc read_buf BOLD) (Buffer.create 15) lexbuf }
 | "//"
@@ -42,6 +44,8 @@ and line acc read_buf = parse
   { inline_code (flush acc read_buf) (Buffer.create 15) lexbuf }
 | "{{"
   { inline_source (flush acc read_buf) (Buffer.create 15) lexbuf }
+| "$$"
+  { line (flush_and_add acc read_buf MATH) (Buffer.create 15) lexbuf }
 | '^' (_ as c)
   { line (flush_and_add acc read_buf (SUP c)) (Buffer.create 15) lexbuf }
 | '_' (_ as c)

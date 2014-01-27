@@ -6,7 +6,7 @@
 %token<int> TITLE
 %token<string> PLAIN INLINE_CODE CODE_BLOCK INLINE_SOURCE SOURCE_BLOCK
 %token<char> SUP SUB
-%token BOLD ITALIC UNDERLINE STRIKE EMPTYLINE
+%token BOLD ITALIC UNDERLINE STRIKE EMPTYLINE MATH MATH_BLOCK
 %token EOF
 
 %start <AST.document> document
@@ -19,7 +19,8 @@ document:
 (*** BLOCKS ***)
 
 block_list:
-| bl=header | bl=paragraph | bl=code_block | bl=source_block | bl=eof { bl }
+| bl=header | bl=paragraph | bl=code_block | bl=source_block | bl=math_block
+| bl=eof { bl }
 
 eof:
 | EOF { [] }
@@ -64,6 +65,12 @@ source_block:
 source_block_f:
 | EMPTYLINE* block_list { $2 }
 
+math_block:
+| MATH_BLOCK inline(math)+ MATH_BLOCK math_block_f { MathBlock $2 :: $4 }
+
+math_block_f:
+| EMPTYLINE* block_list { $2 }
+
 (*** INLINE ELEMENTS ***)
 
 regular:
@@ -72,6 +79,7 @@ regular:
 | UNDERLINE inline(underline)+ UNDERLINE { Underline $2 }
 | STRIKE inline(strike)+ STRIKE { Strike $2 }
 | INLINE_CODE { InlineCode $1 }
+| MATH inline(math)+ MATH { InlineMath $2 }
 
 bold:
 | ITALIC inline(italic)+ ITALIC { Italic $2 }
@@ -92,6 +100,8 @@ strike:
 | BOLD inline(bold)+ BOLD { Bold $2 }
 | ITALIC inline(italic)+ ITALIC { Italic $2 }
 | UNDERLINE inline(underline)+ UNDERLINE { Underline $2 }
+
+math: error { failwith "TODO: raise Parser.Error" }
 
 inline(param):
 | PLAIN { Plain $1 }

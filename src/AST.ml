@@ -3,6 +3,7 @@ type document = block list
  and block =
    | Title of int * inline list
    | Paragraph of inline list
+   | MathBlock of inline list
    | CodeBlock of string
    | SourceBlock of string
 
@@ -10,6 +11,7 @@ type document = block list
    | Plain of string
    | InlineCode of string
    | InlineSource of string
+   | InlineMath of inline list
    | Bold of inline list
    | Italic of inline list
    | Underline of inline list
@@ -26,6 +28,7 @@ and string_of_block = function
   | Paragraph p -> "Paragraph(" ^ string_of_inlines p ^ ")"
   | CodeBlock txt -> "CodeBlock \"" ^ txt ^ "\""
   | SourceBlock txt -> "SourceBlock \"" ^ txt ^ "\""
+  | MathBlock l -> "CodeBlock \"" ^ string_of_inlines l ^ "\""
 
 and string_of_inlines l = 
   "[" ^ String.concat ";" (List.map string_of_inline l) ^ "]"
@@ -38,5 +41,6 @@ and string_of_inline = function
   | Italic i -> "Italic (" ^ string_of_inlines i ^ ")"
   | Underline u -> "Underline (" ^ string_of_inlines u ^ ")"
   | Strike s -> "Strike (" ^ string_of_inlines s ^ ")"
+  | InlineMath m -> "Math (" ^ string_of_inlines m ^ ")"
   | Sup c -> "Sup " ^ String.make 1 c
   | Sub c -> "Sub " ^ String.make 1 c
