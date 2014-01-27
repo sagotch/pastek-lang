@@ -79,6 +79,28 @@ let code_block _ =
     [CodeBlock "let lorem = ipsum\nand ipsum = lorem"]
     (parse "```\nlet lorem = ipsum\nand ipsum = lorem\n```")
 
+let inline_source _ =
+  assert_equal
+    [Paragraph [InlineSource "<b>Lorem <i>ipsum</i>.</b>"]]
+    (parse "{{<b>Lorem <i>ipsum</i>.</b>}}");
+  assert_equal
+    [Paragraph [InlineSource "<b>Lorem <i>ipsum</i>.</b>}}"]]
+    (parse "{{<b>Lorem <i>ipsum</i>.</b>}}}}");
+  assert_equal
+    [Paragraph [InlineSource "<b>Lorem <i>ipsum</i>.</b>"]]
+    (parse "{{<b>Lorem <i>\nipsum</i>.</b>}}")
+
+let source_block _ =
+  assert_equal
+    [SourceBlock "<p>Lorem ipsum.</p>"]
+    (parse "{{{\n<p>Lorem ipsum.</p>\n}}}");
+  assert_equal
+    [SourceBlock "<p>Lorem\nipsum.</p>"]
+    (parse "{{{\n<p>Lorem\nipsum.</p>\n}}}");
+  assert_equal
+    [SourceBlock "<p>Lorem ipsum.</p>}}}"]
+    (parse "{{{\n<p>Lorem ipsum.</p>\n}}}}}}")
+
 let suite = 
   "Suite" >:::
     ["Title" >:: simple_title;
@@ -87,7 +109,9 @@ let suite =
      "Emphasis text" >:: emphasis;
      "Superscript and subscript" >:: sup_sub;
      "Inline code" >:: inline_code;
-     "Code block" >:: code_block]
+     "Code block" >:: code_block;
+     "Inline source" >:: inline_source;
+     "Source block" >:: source_block]
 
 let () =
   run_test_tt_main suite

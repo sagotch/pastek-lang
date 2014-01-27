@@ -3,7 +3,7 @@
 %}
 
 %token<int> TITLE
-%token<string> PLAIN INLINE_CODE CODE_BLOCK
+%token<string> PLAIN INLINE_CODE CODE_BLOCK INLINE_SOURCE SOURCE_BLOCK
 %token<char> SUP SUB
 %token BOLD ITALIC UNDERLINE STRIKE EMPTYLINE
 %token EOF
@@ -18,7 +18,7 @@ document:
 (*** BLOCKS ***)
 
 block_list:
-| bl=header | bl=paragraph | bl=code_block | bl=eof { bl }
+| bl=header | bl=paragraph | bl=code_block | bl=source_block | bl=eof { bl }
 
 eof:
 | EOF { [] }
@@ -30,19 +30,27 @@ header:
 
 header_f:
 | EMPTYLINE+ hf=paragraph { hf }
-| EMPTYLINE* hf=header | EMPTYLINE* hf=code_block | EMPTYLINE* hf=eof { hf }
+| EMPTYLINE* hf=header | EMPTYLINE* hf=code_block | EMPTYLINE* hf=source_block
+| EMPTYLINE* hf=eof { hf }
 
 paragraph:
 | inline(regular)+ paragraph_f { Paragraph $1 :: $2 }
 
 paragraph_f:
-| EMPTYLINE* pf=header | EMPTYLINE* pf=eof | EMPTYLINE* pf=code_block { pf }
+| EMPTYLINE* pf=header | EMPTYLINE* pf=eof | EMPTYLINE* pf=code_block
+| EMPTYLINE* pf=source_block { pf }
 | EMPTYLINE+ paragraph { $2 }
 
 code_block:
 | CODE_BLOCK code_block_f { CodeBlock $1 :: $2 }
 
 code_block_f:
+| EMPTYLINE* block_list { $2 }
+
+source_block:
+| SOURCE_BLOCK source_block_f { SourceBlock $1 :: $2 }
+
+source_block_f:
 | EMPTYLINE* block_list { $2 }
 
 (*** INLINE ELEMENTS ***)
@@ -78,4 +86,5 @@ inline(param):
 | PLAIN { Plain $1 }
 | SUB { Sub $1 }
 | SUP { Sup $1 }
+| INLINE_SOURCE { InlineSource $1 }
 | param { $1 }

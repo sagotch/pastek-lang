@@ -28,6 +28,8 @@ rule line_beginning acc = parse
 and line acc read_buf = parse
 | "```" '\n'?
   { code_block (flush acc read_buf) (Buffer.create 15) lexbuf }
+| "{{{" '\n'?
+  { source_block (flush acc read_buf) (Buffer.create 15) lexbuf }
 | "**"
   { line (flush_and_add acc read_buf BOLD) (Buffer.create 15) lexbuf }
 | "//"
@@ -38,6 +40,8 @@ and line acc read_buf = parse
   { line (flush_and_add acc read_buf STRIKE) (Buffer.create 15) lexbuf }
 | "``"
   { inline_code (flush acc read_buf) (Buffer.create 15) lexbuf }
+| "{{"
+  { inline_source (flush acc read_buf) (Buffer.create 15) lexbuf }
 | '^' (_ as c)
   { line (flush_and_add acc read_buf (SUP c)) (Buffer.create 15) lexbuf }
 | '_' (_ as c)
@@ -65,5 +69,24 @@ and code_block acc read_buf = parse
 | _ as c
   { Buffer.add_char read_buf c;
     code_block acc read_buf lexbuf }
+
+and inline_source acc read_buf = parse
+| "}}" ('}'* as s)
+  { Buffer.add_string read_buf s;
+    line (INLINE_SOURCE (Buffer.contents read_buf) :: acc)
+    (Buffer.create 15) lexbuf }
+| '\n'
+  { inline_source acc read_buf lexbuf }
+| _ as c
+  { Buffer.add_char read_buf c;
+    inline_source acc read_buf lexbuf }
+
+and source_block acc read_buf = parse
+| '\n'? "}}}" ('}'* as s) '\n'?
+  { Buffer.add_string read_buf s;
+    line_beginning (SOURCE_BLOCK (Buffer.contents read_buf) :: acc) lexbuf }
+| _ as c
+  { Buffer.add_char read_buf c;
+    source_block acc read_buf lexbuf }
 
 {}
