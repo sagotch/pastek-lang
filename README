@@ -24,7 +24,9 @@ Bold              **words**
 Italic            //words//
 Underline         __words__
 Strike            ~~words~~
-Monospaced        ``words``
+Inline code       ``words``
+Inline source     {{words}}
+Inline Math       $$words$$
 
 Table             +-----------------------------+ (optionnal)
                   |  head1  |  head2  |  head3  | (optionnal
@@ -39,7 +41,7 @@ Subscript         _i (one sign)
 Superscript       ^i (one sign)
                   ^{index} (several signs)
 
-Codeblock         ```
+Code block        ```
                   let triple_backquoted =
                     "Code block"
                   ```
@@ -51,9 +53,15 @@ External command  ```dot
                   }
                   ```
 
-Source code       {{{<span style="color:blue">Inline source code.</span>}}}
+Source block      {{{<span style="color:blue">Inline source code.</span>}}}
                   {{{
                   <p style="color:red">
                   Introduce source code in your document.
                   </p>
                   }}}
+
+Math block        $$$
+                  &forall; a, b, c &isin; [0;9] | a < b,
+                                                  a^2 + b^2 = c^2
+                  ...
+                  $$$
