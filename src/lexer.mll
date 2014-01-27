@@ -27,7 +27,7 @@ rule line_beginning acc = parse
 
 and line acc read_buf = parse
 | "```" '\n'?
-  { code_block acc (Buffer.create 15) lexbuf }
+  { code_block (flush acc read_buf) (Buffer.create 15) lexbuf }
 | "**"
   { line (flush_and_add acc read_buf BOLD) (Buffer.create 15) lexbuf }
 | "//"
