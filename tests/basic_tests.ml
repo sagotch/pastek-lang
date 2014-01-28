@@ -121,6 +121,21 @@ let math _ =
     (Failure "TODO: raise Parser.Error")
     (fun () -> (parse "$$Lorem **ipsum**$$"))
 
+let list_t _ =
+  assert_equal
+    [List(false, [Item([Plain"Lorem"],
+                       Some (false,
+                             [Item([Plain"ipsum"], None);
+                              Item([Plain"dolor --sit"], None)]));
+                  Item([Plain"amet"], None)])]
+    (parse "- Lorem\n--ipsum\n--dolor --sit\n-amet");
+  assert_raises
+    (Failure "List error")
+    (fun () -> parse "- Lorem\n---ipsum");
+  assert_raises
+    (Failure "List error")
+    (fun () -> parse "- Lorem\n#ipsum")
+
 let suite = 
   "Suite" >:::
     ["Title" >:: simple_title;
@@ -132,7 +147,8 @@ let suite =
      "Code block" >:: code_block;
      "Inline source" >:: inline_source;
      "Source block" >:: source_block;
-     "Math" >:: math]
+     "Math" >:: math;
+     "List" >:: list_t]
 
 let () =
   run_test_tt_main suite

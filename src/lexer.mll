@@ -16,6 +16,10 @@ rule line_beginning acc = parse
   { List.rev acc }
 | ' '
   { line_beginning acc lexbuf }
+| ('-'+ as l) ' '*
+  { line (UITEM (String.length l) :: acc) (Buffer.create 15) lexbuf }
+| ('#'+ as l) ' '*
+  { line (OITEM (String.length l) :: acc) (Buffer.create 15) lexbuf }
 | ('='+ as l) ' '*
   { line (TITLE (String.length l) :: acc) (Buffer.create 15) lexbuf }
 | '\n'

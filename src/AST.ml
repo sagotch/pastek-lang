@@ -4,8 +4,13 @@ type document = block list
    | Title of int * inline list
    | Paragraph of inline list
    | MathBlock of inline list
+   | List of list_t
    | CodeBlock of string
    | SourceBlock of string
+
+ and list_t = bool * item_t list
+
+ and item_t = Item of inline list * list_t option
 
  and inline =
    | Plain of string
@@ -29,6 +34,18 @@ and string_of_block = function
   | CodeBlock txt -> "CodeBlock \"" ^ txt ^ "\""
   | SourceBlock txt -> "SourceBlock \"" ^ txt ^ "\""
   | MathBlock l -> "CodeBlock \"" ^ string_of_inlines l ^ "\""
+  | List l -> string_of_list l
+
+and string_of_list = function
+  | true, l -> "OList(" ^ string_of_items l ^ ")"
+  | false, l -> "UList(" ^ string_of_items l ^ ")"
+
+and string_of_items l =
+  "[" ^ String.concat ";" (List.map string_of_item l) ^ "]"
+
+and string_of_item = function
+  | Item(txt, None) -> string_of_inlines txt
+  | Item(txt, Some sub) -> string_of_inlines txt ^ string_of_list sub
 
 and string_of_inlines l = 
   "[" ^ String.concat ";" (List.map string_of_inline l) ^ "]"

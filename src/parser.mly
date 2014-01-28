@@ -1,9 +1,31 @@
 %{
   open AST
   open Str
+
+  let rec add_to_list li (ord, dep, txt) =
+    let ord', li = li in
+    let li = List.rev li in
+    if dep = 1
+    then if ord <> ord'
+         then failwith "List error"
+         else ord', List.rev (Item(txt, None) :: li)
+    else let Item(txt', child) = (List.hd li) in
+         let item =  match child with
+           | None ->
+              if dep <> 2 || ord <> ord'
+              then failwith "List error"
+              else Item(txt', Some (ord, [Item(txt, None)]))
+           | Some child ->
+              Item(txt', Some (add_to_list child (ord, (dep - 1), txt)))
+         in ord', List.rev @@ item :: (List.tl li)
+
+  let mk_list l =
+    let (ord, _, txt) = List.hd l in
+    let first = ord, [Item(txt, None)] in
+    List(List.fold_left add_to_list first (List.tl l))
 %}
 
-%token<int> TITLE
+%token<int> TITLE OITEM UITEM
 %token<string> PLAIN INLINE_CODE CODE_BLOCK INLINE_SOURCE SOURCE_BLOCK
 %token<char> SUP SUB
 %token BOLD ITALIC UNDERLINE STRIKE EMPTYLINE MATH MATH_BLOCK
@@ -20,7 +42,7 @@ document:
 
 block_list:
 | bl=header | bl=paragraph | bl=code_block | bl=source_block | bl=math_block
-| bl=eof { bl }
+| bl=eof | bl=list_t { bl }
 
 eof:
 | EOF { [] }
@@ -44,6 +66,17 @@ header_f:
 | EMPTYLINE+ hf=paragraph { hf }
 | EMPTYLINE* hf=header | EMPTYLINE* hf=code_block | EMPTYLINE* hf=source_block
 | EMPTYLINE* hf=eof { hf }
+
+list_t:
+| item_t+ list_t_f { mk_list $1 :: $2 }
+
+item_t:
+| OITEM inline(regular)* { (true, $1, $2) }
+| UITEM inline(regular)* { (false, $1, $2) }
+
+list_t_f:
+| lf=header | lf=code_block | lf=math_block | lf=source_block | lf=eof { lf }
+| EMPTYLINE+ lf=block_list { lf }
 
 paragraph:
 | inline(regular)+ paragraph_f { Paragraph $1 :: $2 }
