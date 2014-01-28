@@ -123,12 +123,25 @@ let math _ =
 
 let list_t _ =
   assert_equal
+    [List(true, [Item([Plain"Lorem"],
+                       Some (true,
+                             [Item([Plain"ipsum"], None);
+                              Item([Plain"dolor ##sit"], None)]));
+                  Item([Plain"amet"], None)])]
+    (parse "# Lorem\n##ipsum\n##dolor ##sit\n#amet");
+  assert_equal
     [List(false, [Item([Plain"Lorem"],
                        Some (false,
                              [Item([Plain"ipsum"], None);
                               Item([Plain"dolor --sit"], None)]));
                   Item([Plain"amet"], None)])]
     (parse "- Lorem\n--ipsum\n--dolor --sit\n-amet");
+  assert_equal
+    [List(false, [Item([Plain"Lorem"],
+                       Some (true,
+                             [Item([Plain"ipsum"], None)]));
+                  Item([Plain"dolor"], None)])]
+    (parse "- Lorem\n##ipsum\n-dolor");
   assert_raises
     (Failure "List error")
     (fun () -> parse "- Lorem\n---ipsum");

@@ -12,7 +12,7 @@
     else let Item(txt', child) = (List.hd li) in
          let item =  match child with
            | None ->
-              if dep <> 2 || ord <> ord'
+              if dep <> 2
               then failwith "List error"
               else Item(txt', Some (ord, [Item(txt, None)]))
            | Some child ->
