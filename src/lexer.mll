@@ -22,6 +22,8 @@ rule line_beginning acc = parse
   { line (OITEM (String.length l) :: acc) (Buffer.create 15) lexbuf }
 | ('='+ as l) ' '*
   { line (TITLE (String.length l) :: acc) (Buffer.create 15) lexbuf }
+| '|' ' '*
+  { line (TBL_START :: acc) (Buffer.create 15) lexbuf }
 | '\n'
   { line_beginning (EMPTYLINE :: acc) lexbuf }
 | ""
@@ -54,6 +56,13 @@ and line acc read_buf = parse
   { line (flush_and_add acc read_buf (SUP c)) (Buffer.create 15) lexbuf }
 | '_' (_ as c)
   { line (flush_and_add acc read_buf (SUB c)) (Buffer.create 15) lexbuf }
+| ' '* '|' ' '*
+  { line (flush_and_add acc read_buf TBL_SEP) (Buffer.create 15) lexbuf }
+| ' '* '|' ' '* (('\n' | eof) as c)
+  { match c with
+    | "\n" -> line_beginning
+                (flush_and_add acc read_buf TBL_END) lexbuf
+    | _ -> List.rev (flush_and_add acc read_buf TBL_END) }
 | '\n'
   { line_beginning (flush acc read_buf) lexbuf }
 | _ as c

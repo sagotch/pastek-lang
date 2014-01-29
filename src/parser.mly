@@ -29,6 +29,7 @@
 %token<string> PLAIN INLINE_CODE CODE_BLOCK INLINE_SOURCE SOURCE_BLOCK
 %token<char> SUP SUB
 %token BOLD ITALIC UNDERLINE STRIKE EMPTYLINE MATH MATH_BLOCK
+       TBL_START TBL_SEP TBL_END
 %token EOF
 
 %start <AST.document> document
@@ -42,14 +43,14 @@ document:
 
 block_list:
 | bl=header | bl=paragraph | bl=code_block | bl=source_block | bl=math_block
-| bl=eof | bl=list_t { bl }
+| bl=eof | bl=list_t | bl=table { bl }
 
 eof:
 | EOF { [] }
 
 (* NB: with this configuration, headers have to be separated from
- paragraphs with an empty line.
- NB: This implentation add the Str library dependancy *)
+ * paragraphs with an empty line.
+ * NB: This implentation add the Str library dependancy *)
 header:
 | TITLE inline(regular)+ header_f
   { let l = List.rev $2 in
@@ -63,9 +64,21 @@ header:
     | _ -> Title ($1, $2) :: $3 }
 
 header_f:
-| EMPTYLINE+ hf=paragraph { hf }
-| EMPTYLINE* hf=header | EMPTYLINE* hf=code_block | EMPTYLINE* hf=source_block
-| EMPTYLINE* hf=eof { hf }
+| EMPTYLINE+ hf=block_list { hf }
+| hf=header | hf=code_block | hf=source_block | hf=eof | hf=table { hf }
+
+(* This is a quick implementation allowing only no-header/no-decoration tables
+ * as: | Cell 1.1 | Cell 1.2 |
+ *     | Cell 2.1 | Cell 2.2 | *)
+table:
+| delimited(TBL_START, separated_nonempty_list(TBL_SEP, inline(regular)*),
+            TBL_END)+ table_f
+  { Table(None, $1) :: $2 }
+
+table_f:
+| tf=header | tf=paragraph | tf=code_block | tf=source_block | tf=math_block
+| tf=eof | tf=list_t { tf }
+| EMPTYLINE+ block_list { $2 }
 
 list_t:
 | item_t+ list_t_f { mk_list $1 :: $2 }
@@ -75,16 +88,16 @@ item_t:
 | UITEM inline(regular)* { (false, $1, $2) }
 
 list_t_f:
-| lf=header | lf=code_block | lf=math_block | lf=source_block | lf=eof { lf }
+| lf=header | lf=code_block | lf=math_block | lf=table | lf=source_block
+| lf=eof { lf }
 | EMPTYLINE+ lf=block_list { lf }
 
 paragraph:
 | inline(regular)+ paragraph_f { Paragraph $1 :: $2 }
 
 paragraph_f:
-| EMPTYLINE* pf=header | EMPTYLINE* pf=eof | EMPTYLINE* pf=code_block
-| EMPTYLINE* pf=source_block { pf }
-| EMPTYLINE+ paragraph { $2 }
+| pf=header | pf=eof | pf=code_block | pf=source_block | pf=table { pf }
+| EMPTYLINE+ block_list { $2 }
 
 code_block:
 | CODE_BLOCK code_block_f { CodeBlock $1 :: $2 }

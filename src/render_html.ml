@@ -61,6 +61,22 @@ module Render_html : Content_render = struct
     render_inlines inlines;
     add_string "\n</p>\n"
 
+  and render_table headers content = 
+    let render_table_line =
+    List.iter (fun x -> add_string "<td>\n";
+                        render_inlines x;
+                        add_string "\n</td>\n") in
+    let render_table_lines =
+      List.iter (fun x -> add_string "<tr>\n";
+                          render_table_line x;
+                          add_string "</tr>\n") in
+    add_string "<table>\n";
+    (match headers with
+       | None -> ()
+       | Some header -> ());
+    render_table_lines content;
+    add_string "</table>\n"
+
   and render_list (ord, items) =
     add_string @@ if ord then "<ol>\n" else "<ul>\n";
     render_items items;

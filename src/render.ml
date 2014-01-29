@@ -8,6 +8,7 @@ module type Content_render = sig
     val render_title : int -> inline list -> unit
     val render_paragraph : inline list -> unit
     val render_math_block : inline list -> unit
+    val render_table : inline list option -> inline list list list -> unit
     val render_list : list_t -> unit
     val render_code_block : string -> unit
     val render_source_block : string -> unit
@@ -23,6 +24,7 @@ struct
         | Title(level, inlines) -> render_title level inlines
         | Paragraph(inlines) -> render_paragraph inlines
         | MathBlock(inlines) -> render_math_block inlines
+        | Table(headers, content) -> render_table headers content
         | List(li) -> render_list li
         | CodeBlock(data) -> render_code_block data
         | SourceBlock(data) -> render_source_block data)

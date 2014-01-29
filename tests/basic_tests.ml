@@ -142,6 +142,16 @@ let list_t _ =
     (Failure "List error")
     (fun () -> parse "- Lorem\n#ipsum")
 
+let table _ =
+  assert_equal
+    [Table(None, [[[Plain "Cell 1.1"];[Plain "Cell 1.2"]];
+                  [[Plain "Cell 2.1"];[Plain "Cell 2.2"]]])]
+    (parse "| Cell 1.1 | Cell 1.2 |\n| Cell 2.1 | Cell 2.2 |");
+  assert_equal
+    [Table(None, [[[];[]];
+                  [[];[]]])]
+    (parse "|  |  |\n|  |  |")
+
 let suite = 
   "Suite" >:::
     ["Title" >:: simple_title;
@@ -154,7 +164,8 @@ let suite =
      "Inline source" >:: inline_source;
      "Source block" >:: source_block;
      "Math" >:: math;
-     "List" >:: list_t]
+     "List" >:: list_t;
+     "Table" >:: table]
 
 let _  =
   run_test_tt_main suite
