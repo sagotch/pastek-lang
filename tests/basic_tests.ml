@@ -1,4 +1,4 @@
-open OUnit2
+open OUnit
 open AST
 open Parser
 
@@ -163,5 +163,5 @@ let suite =
      "Math" >:: math;
      "List" >:: list_t]
 
-let () =
+let _  =
   run_test_tt_main suite
