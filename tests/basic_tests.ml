@@ -137,6 +137,13 @@ let list_t _ =
 
 let table _ =
   assert_equal
+    [Table(None, [[[Plain "* Cell 1.1"]]])]
+    (parse "| * Cell 1.1 |\n");
+  assert_equal
+    [Table(None, [[[Plain "Cell 1"; Sup '1'];[Plain "Cell 1.2"]];
+                  [[Plain "Cell 2.1"];[Plain "Cell "; Bold [Plain "2.2"]]]])]
+    (parse "| Cell 1^1 | Cell 1.2 |\n| Cell 2.1 | Cell **2.2** |");
+  assert_equal
     [Table(None, [[[Plain "Cell 1.1"];[Plain "Cell 1.2"]];
                   [[Plain "Cell 2.1"];[Plain "Cell 2.2"]]])]
     (parse "| Cell 1.1 | Cell 1.2 |\n| Cell 2.1 | Cell 2.2 |");
