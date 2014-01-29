@@ -7,7 +7,7 @@ let parse str =
   let lexbuf = Lexing.from_string str in
   Lexer.parse lexbuf
 
-let simple_title _ =
+let title _ =
   assert_equal
     [Title(3, [Plain "Lorem"])]
     (parse "=== Lorem === ");
@@ -21,20 +21,13 @@ let simple_title _ =
     [Title(1, [Plain "Lorem"])]
     (parse "= Lorem")
 
-let simple_paragraph _ =
+let paragraph _ =
   assert_equal
     [Paragraph [Plain "Lorem ipsum."]]
     (parse "Lorem ipsum.");
   assert_equal
     [Paragraph [Plain "Lorem ipsum."; Plain "Dolor sit amet"]]
     (parse "Lorem ipsum.\nDolor sit amet")
-
-let block_suit _ =
-  assert_equal
-    [Title(1, [Plain "Lorem"]);
-     Title(2, [Plain "Ipsum"]);
-     Paragraph [Plain "Dolor sit amet."]]
-    (parse "=Lorem\n  ==  Ipsum\n\nDolor sit amet.")
 
 let emphasis _ =
   assert_equal
@@ -152,11 +145,17 @@ let table _ =
                   [[];[]]])]
     (parse "|  |  |\n|  |  |")
 
+let block_suit _ =
+  assert_equal
+    [Title(1, [Plain "Lorem"]);
+     Title(2, [Plain "Ipsum"]);
+     Paragraph [Plain "Dolor sit amet."]]
+    (parse "=Lorem\n  ==  Ipsum\n\nDolor sit amet.")
+
 let suite = 
   "Suite" >:::
-    ["Title" >:: simple_title;
-     "Paragraph" >:: simple_paragraph;
-     "Block suit" >:: block_suit;
+    ["Title" >:: title;
+     "Paragraph" >:: paragraph;
      "Emphasis text" >:: emphasis;
      "Superscript and subscript" >:: sup_sub;
      "Inline code" >:: inline_code;
@@ -165,7 +164,8 @@ let suite =
      "Source block" >:: source_block;
      "Math" >:: math;
      "List" >:: list_t;
-     "Table" >:: table]
+     "Table" >:: table;
+     "Block suit" >:: block_suit]
 
 let _  =
   run_test_tt_main suite
