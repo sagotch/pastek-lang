@@ -1,18 +1,11 @@
 open OUnit
 open AST
-open Parser
+open Lexer
 
 let assert_equal ctxt = assert_equal ~printer:string_of_document ctxt
-
-(* Quick and dirty fix to use Menhir with token list *)
 let parse str =
   let lexbuf = Lexing.from_string str in
-  let tokens = ref @@ Lexer.line_beginning [] lexbuf in
-  let token _ = 
-    match !tokens with 
-    | []     -> EOF 
-    | h :: t -> tokens := t ; h 
-  in Parser.document token @@ Lexing.from_string ""
+  Lexer.parse lexbuf
 
 let simple_title _ =
   assert_equal

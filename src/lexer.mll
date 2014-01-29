@@ -97,4 +97,13 @@ and source_block acc read_buf = parse
   { Buffer.add_char read_buf c;
     source_block acc read_buf lexbuf }
 
-{}
+{
+  (* Quick and dirty fix to use Menhir with token list *)
+  let parse lexbuf =
+    let tokens = ref @@ line_beginning [] lexbuf in
+    let token _ = 
+      match !tokens with 
+      | []     -> EOF 
+      | h :: t -> tokens := t ; h 
+    in Parser.document token @@ Lexing.from_string ""
+}
