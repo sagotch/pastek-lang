@@ -169,6 +169,24 @@ let table _ =
     Parser.Error
     (fun () -> parse "| Cell 1.1 | Cell 1.2 |\n+---------+")
 
+let escape _ =
+  assert_equal [Paragraph [Plain "-"]] (parse "\\-");
+  assert_equal [Paragraph [Plain "#"]] (parse "\\#");
+  assert_equal [Paragraph [Plain "|"]] (parse "\\|");
+  assert_equal [Paragraph [Plain "="]] (parse "\\=");
+  assert_equal [Paragraph [Plain "`"]] (parse "\\`");
+  assert_equal [Paragraph [Plain "{"]] (parse "\\{");
+  assert_equal [Paragraph [Plain "$"]] (parse "\\$");
+  assert_equal [Paragraph [Plain "**"]] (parse "\\**");
+  assert_equal [Paragraph [Plain "//"]] (parse "\\//");
+  assert_equal [Paragraph [Plain "__"]] (parse "\\__");
+  assert_equal [Paragraph [Plain "~~"]] (parse "\\~~");
+  assert_equal [Paragraph [Plain "^"]] (parse "\\^");
+  assert_equal [Paragraph [Plain "\\not escapable"]] (parse "\\not escapable");
+  assert_equal
+    [Paragraph [Plain "-"; Plain "#"; Plain "|"; Plain "=`{$**//__~~^"]]
+    (parse "\\-\n\\#\n\\|\n\\=\\`\\{\\$\\**\\//\\_\\_\\~~\\^")
+
 let block_suit _ =
   assert_equal
     [Title(1, [Plain "Lorem"]);
@@ -189,6 +207,7 @@ let suite =
      "Math" >:: math;
      "List" >:: list_t;
      "Table" >:: table;
+     "Escape" >:: escape;
      "Block suit" >:: block_suit]
 
 let _  =

@@ -9,6 +9,8 @@
     let acc = flush acc buffer in tok :: acc
 }
 
+let escapable = ['-' '#' '|' '=' '`' '{' '$' '*' '/' '_' '~' '^']
+
 (*** BLOCK MARKERS ***)
 
 rule line_beginning acc = parse
@@ -75,6 +77,9 @@ and line acc read_buf = parse
     | _ -> List.rev (flush_and_add acc read_buf TBL_END) }
 | '\n'
   { line_beginning (flush acc read_buf) lexbuf }
+| '\\' (escapable as c)
+  { Buffer.add_char read_buf c;
+    line acc read_buf lexbuf }
 | _ as c
   { Buffer.add_char read_buf c;
     line acc read_buf lexbuf }
@@ -119,6 +124,9 @@ and source_block acc read_buf = parse
 and sup_sub opened closing acc read_buff = parse
 | "\\{"
   { Buffer.add_char read_buff '{';
+    sup_sub opened closing acc read_buff lexbuf }
+| "\\}"
+  { Buffer.add_char read_buff '}';
     sup_sub opened closing acc read_buff lexbuf }
 | ['_' '^'] '{' as s
   { Buffer.add_string read_buff s;
