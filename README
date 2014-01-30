@@ -68,6 +68,13 @@ Math block        $$$
 
 == Configuration ==
 
+Configuration is written in TOML. It can be provided by a configuration file, 
+a special header in a document (written inside %{ and }% tags), or by a 
+combination of both.
+
+Here is an example of configuration informations included at the beginning of a
+document.
+
 %{
 [css]
     
@@ -85,4 +92,6 @@ Math block        $$$
 [cmd]
    [cmd.dot]
    cmd = "dot -Tsvg - -"
+   [cmd.hopt]
+   cmd = ~/html_tool/hopt
 %}
