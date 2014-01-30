@@ -73,7 +73,9 @@ module Render_html : Content_render = struct
     add_string "<table>\n";
     (match headers with
        | None -> ()
-       | Some header -> ());
+       | Some header -> add_string "<th>\n";
+                        render_table_line header;
+                        add_string "</th>\n");
     render_table_lines content;
     add_string "</table>\n"
 
