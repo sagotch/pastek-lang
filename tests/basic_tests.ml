@@ -52,10 +52,20 @@ let emphasis _ =
 
 let sup_sub _ =
   assert_equal
-    [Paragraph [Plain "Lorem"; Sup '2'; Plain " ipsum."]]
-    (parse "Lorem^2 ipsum.");
+    [Paragraph [Plain "Lorem"; Sup [Plain "42"]; Plain " ipsum."]]
+    (parse "Lorem^{42} ipsum.");
   assert_equal
-    [Paragraph [Plain "Lorem"; Sub 'i'; Plain " ipsum."]]
+    [Paragraph [Plain "Lorem";
+                Sub [Bold [Plain "dolor ";
+                           Italic [Plain "sit"];
+                           Plain " amet"]];
+                Plain " ipsum."]]
+    (parse "Lorem_{**dolor //sit// amet**} ipsum.");
+  assert_equal
+    [Paragraph [Plain "Lorem"; Sup [Plain "2"]; Plain " ipsum."]]
+    (parse "Lorem^{2} ipsum.");
+  assert_equal
+    [Paragraph [Plain "Lorem"; Sub [Plain "i"]; Plain " ipsum."]]
     (parse "Lorem_i ipsum.")
 
 let inline_code _ =
@@ -98,10 +108,10 @@ let source_block _ =
 
 let math _ =
   assert_equal
-    [Paragraph [InlineMath [Plain "Lorem"; Sup '2'; Plain " ipsum."]]]
+    [Paragraph [InlineMath [Plain "Lorem"; Sup [Plain "2"]; Plain " ipsum."]]]
     (parse "$$Lorem^2 ipsum.$$");
   assert_equal
-    [MathBlock [Plain "Lorem"; Sub 'i'; Plain " ipsum."]]
+    [MathBlock [Plain "Lorem"; Sub [Plain "i"]; Plain " ipsum."]]
     (parse "$$$Lorem_i ipsum.$$$");
   assert_raises
     (Failure "TODO: raise Parser.Error")
@@ -140,7 +150,7 @@ let table _ =
     [Table(None, [[[Plain "* Cell 1.1"]]])]
     (parse "| * Cell 1.1 |\n");
   assert_equal
-    [Table(None, [[[Plain "Cell 1"; Sup '1'];[Plain "Cell 1.2"]];
+    [Table(None, [[[Plain "Cell 1"; Sup [Plain "1"]];[Plain "Cell 1.2"]];
                   [[Plain "Cell 2.1"];[Plain "Cell "; Bold [Plain "2.2"]]]])]
     (parse "| Cell 1^1 | Cell 1.2 |\n| Cell 2.1 | Cell **2.2** |");
   assert_equal

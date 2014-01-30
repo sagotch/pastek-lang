@@ -30,6 +30,7 @@
 %token<char> SUP SUB
 %token BOLD ITALIC UNDERLINE STRIKE EMPTYLINE MATH MATH_BLOCK
        TBL_HSEP TBL_START TBL_SEP TBL_END
+       SUP_START SUP_END SUB_START SUB_END
 %token EOF
 
 %start <AST.document> document
@@ -162,7 +163,9 @@ math: error { failwith "TODO: raise Parser.Error" }
 
 inline(param):
 | PLAIN { Plain $1 }
-| SUB { Sub $1 }
-| SUP { Sup $1 }
+| SUB { Sub [Plain (String.make 1 $1)] }
+| SUP { Sup [Plain (String.make 1 $1)] }
+| SUP_START inline(param)* SUP_END  { Sup $2 }
+| SUB_START inline(param)* SUB_END { Sub $2 }
 | INLINE_SOURCE { InlineSource $1 }
 | param { $1 }

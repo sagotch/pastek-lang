@@ -65,3 +65,24 @@ Math block        $$$
                                                   a^2 + b^2 = c^2
                   ...
                   $$$
+
+== Configuration ==
+
+%{
+[css]
+    
+    [css.default]
+    url = https://raw.github.com/sagotch/pastek/res/pastek_default.css
+    inline = false # default behavior so you may remove this line
+                   # produce lighter documents
+    [css.hopt]
+    # add this if you use html_of_proof_tree in your document
+    url = https://raw.github.com/sagotch/hopt/master/src/hopt.css
+    inline = true # nobody knows what will happens to this css file
+                  # inlining allow to copy content of the file in
+                  # document header
+
+[cmd]
+   [cmd.dot]
+   cmd = "dot -Tsvg - -"
+%}

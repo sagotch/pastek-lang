@@ -22,8 +22,8 @@ type document = block list
    | Italic of inline list
    | Underline of inline list
    | Strike of inline list
-   | Sup of char
-   | Sub of char
+   | Sup of inline list
+   | Sub of inline list
 
 let rec string_of_document doc =
   String.concat "\n" @@ List.map string_of_block doc
@@ -73,5 +73,5 @@ and string_of_inline = function
   | Underline u -> "Underline (" ^ string_of_inlines u ^ ")"
   | Strike s -> "Strike (" ^ string_of_inlines s ^ ")"
   | InlineMath m -> "Math (" ^ string_of_inlines m ^ ")"
-  | Sup c -> "Sup " ^ String.make 1 c
-  | Sub c -> "Sub " ^ String.make 1 c
+  | Sup s -> "Sup(" ^ string_of_inlines s ^ ")"
+  | Sub s -> "Sub(" ^ string_of_inlines s ^ ")"

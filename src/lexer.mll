@@ -56,6 +56,12 @@ and line acc read_buf = parse
   { inline_source (flush acc read_buf) (Buffer.create 15) lexbuf }
 | "$$"
   { line (flush_and_add acc read_buf MATH) (Buffer.create 15) lexbuf }
+| "^{"
+  { sup_sub 1 SUP_END (flush_and_add acc read_buf SUP_START)
+            (Buffer.create 15) lexbuf }
+| "_{"
+  { sup_sub 1 SUB_END (flush_and_add acc read_buf SUB_START)
+            (Buffer.create 15) lexbuf }
 | '^' (_ as c)
   { line (flush_and_add acc read_buf (SUP c)) (Buffer.create 15) lexbuf }
 | '_' (_ as c)
@@ -109,6 +115,30 @@ and source_block acc read_buf = parse
 | _ as c
   { Buffer.add_char read_buf c;
     source_block acc read_buf lexbuf }
+
+and sup_sub opened closing acc read_buff = parse
+| "\\{"
+  { Buffer.add_char read_buff '{';
+    sup_sub opened closing acc read_buff lexbuf }
+| ['_' '^'] '{' as s
+  { Buffer.add_string read_buff s;
+    sup_sub (opened + 1) closing acc read_buff lexbuf }
+| "{{"
+  { Buffer.add_string read_buff "{{";
+    sup_sub (opened + 2) closing acc read_buff lexbuf }
+| '}'
+  { if opened = 1
+    then let lex = Lexing.from_string (Buffer.contents read_buff) in
+         let tokens = line_beginning [] lex in
+         let acc = closing
+                   :: List.fold_left
+                        (fun acc -> fun tok -> tok :: acc)
+                        acc tokens in
+         line acc (Buffer.create 15) lexbuf
+    else (Buffer.add_char read_buff '}';
+          sup_sub (opened - 1) closing acc read_buff lexbuf) }
+| _ as c { Buffer.add_char read_buff c;
+           sup_sub opened closing acc read_buff lexbuf }
 
 {
   (* Quick and dirty fix to use Menhir with token list *)
