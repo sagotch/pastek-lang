@@ -29,7 +29,7 @@
 %token<string> PLAIN INLINE_CODE CODE_BLOCK INLINE_SOURCE SOURCE_BLOCK
 %token<char> SUP SUB
 %token BOLD ITALIC UNDERLINE STRIKE EMPTYLINE MATH MATH_BLOCK
-       TBL_START TBL_SEP TBL_END
+       TBL_HSEP TBL_START TBL_SEP TBL_END
 %token EOF
 
 %start <AST.document> document
@@ -67,13 +67,24 @@ header_f:
 | EMPTYLINE+ hf=block_list { hf }
 | hf=header | hf=code_block | hf=source_block | hf=eof | hf=table { hf }
 
-(* This is a quick implementation allowing only no-header/no-decoration tables
- * as: | Cell 1.1 | Cell 1.2 |
- *     | Cell 2.1 | Cell 2.2 | *)
+
+(* Paste tables are not fully supported
+ * +----------+----------+ <- this line is not allowed
+ * |   head1  |  head2   |
+ * +----------+----------+
+ * | cell 1.1 | cell 1.2 |
+ * | cell 1.1 | cell 1.2 |
+ * +----------+----------+ <- this one neither
+ *)
 table:
-| delimited(TBL_START, separated_nonempty_list(TBL_SEP, inline(regular)*),
-            TBL_END)+ table_f
+| table_line TBL_HSEP table_line+ table_f
+  { Table(Some $1, $3) :: $4 }
+| table_line+ table_f
   { Table(None, $1) :: $2 }
+
+table_line:
+| TBL_START separated_nonempty_list(TBL_SEP, inline(regular)*) TBL_END
+  { $2 }
 
 table_f:
 | tf=header | tf=paragraph | tf=code_block | tf=source_block | tf=math_block

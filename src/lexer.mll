@@ -24,6 +24,10 @@ rule line_beginning acc = parse
   { line (TITLE (String.length l) :: acc) (Buffer.create 15) lexbuf }
 | '|' ' '*
   { line (TBL_START :: acc) (Buffer.create 15) lexbuf }
+| '+' ['+' '-']* '+' ("\n" | eof as ending)
+  { match ending with
+    | "\n" -> line_beginning (TBL_HSEP :: acc) lexbuf
+    | eof -> List.rev (TBL_HSEP :: acc)}
 | '\n'
   { line_beginning (EMPTYLINE :: acc) lexbuf }
 | ""

@@ -148,9 +148,16 @@ let table _ =
                   [[Plain "Cell 2.1"];[Plain "Cell 2.2"]]])]
     (parse "| Cell 1.1 | Cell 1.2 |\n| Cell 2.1 | Cell 2.2 |");
   assert_equal
+    [Table(Some [[Plain "Cell 1.1"];[Plain "Cell 1.2"]],
+           [[[Plain "Cell 2.1"];[Plain "Cell 2.2"]]])]
+    (parse "| Cell 1.1 | Cell 1.2 |\n+--+\n| Cell 2.1 | Cell 2.2 |");
+  assert_equal
     [Table(None, [[[];[]];
                   [[];[]]])]
-    (parse "|  |  |\n|  |  |")
+    (parse "|  |  |\n|  |  |");
+  assert_raises
+    Parser.Error
+    (fun () -> parse "| Cell 1.1 | Cell 1.2 |\n+---------+")
 
 let block_suit _ =
   assert_equal

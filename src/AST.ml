@@ -4,7 +4,7 @@ type document = block list
    | Title of int * inline list
    | Paragraph of inline list
    | MathBlock of inline list
-   | Table of inline list option * inline list list list
+   | Table of inline list list option * inline list list list
    | List of list_t
    | CodeBlock of string
    | SourceBlock of string
@@ -41,12 +41,14 @@ and string_of_block = function
 and string_of_table (head, cont) =
   (match head with
    | None -> ""
-   | Some h -> "Head(" ^ string_of_inlines h ^ "), ")
-  ^ "Content([" ^ string_of_tline cont ^ "])"
+   | Some h -> "Head(" ^ string_of_tline h ^ "), ")
+  ^ "Content([" ^ string_of_tlines cont ^ "])"
 
-and string_of_tline cont =
-  "[" ^ String.concat ";" (List.map (fun line ->
-    "[" ^ String.concat ";" (List.map string_of_inlines line) ^ "]") cont) ^ "]"
+and string_of_tline line = 
+  "[" ^ String.concat ";" (List.map string_of_inlines line) ^ "]"
+
+and string_of_tlines cont =
+  "[" ^ String.concat ";" (List.map string_of_tline cont) ^ "]"
                                 
 and string_of_list = function
   | true, l -> "OList(" ^ string_of_items l ^ ")"
