@@ -149,10 +149,23 @@ and sup_sub opened closing acc read_buff = parse
 | _ as c { add_char read_buff c;
            sup_sub opened closing acc read_buff lexbuf }
 
+and first_line read_buff = parse
+| '\n' | ' ' { first_line read_buff lexbuf }
+| "%{" { read_config read_buff lexbuf }
+| "" { line_beginning [] lexbuf }
+
+and read_config read_buff = parse
+| eof { failwith "Unclosed configuration declaration" }
+| "\\%}" { add_string read_buff "%}";
+           read_config read_buff lexbuf }
+| "%}" { line_beginning [] lexbuf }
+| _ as c { add_char read_buff c;
+           read_config read_buff lexbuf }
+
 {
   (* Quick and dirty fix to use Menhir with token list *)
-  let parse lexbuf =
-    let tokens = ref @@ line_beginning [] lexbuf in
+  let parse config lexbuf =
+    let tokens = ref @@ first_line config lexbuf in
     let token _ = 
       match !tokens with 
       | []     -> EOF 

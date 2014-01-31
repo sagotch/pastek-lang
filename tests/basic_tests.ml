@@ -2,10 +2,13 @@ open OUnit
 open AST
 open Lexer
 
-let assert_equal ctxt = assert_equal ~printer:string_of_document ctxt
+(** DOCUMENT PARSING **)
+
+let assert_equal ctxt = OUnit.assert_equal ~printer:string_of_document ctxt
+
 let parse str =
   let lexbuf = Lexing.from_string str in
-  Lexer.parse lexbuf
+  Lexer.parse (Buffer.create 0) lexbuf
 
 let title _ =
   assert_equal
@@ -195,6 +198,27 @@ let block_suit _ =
      Paragraph [Plain "Dolor sit amet."]]
     (parse "=Lorem\n  ==  Ipsum\n\nDolor sit amet.")
 
+(** CONFIGURATION PARSING **)
+
+let assert_equal = OUnit.assert_equal
+
+let parse str : string =
+  let lexbuf = Lexing.from_string str 
+  and config = Buffer.create 42 in
+  ignore(Lexer.parse config lexbuf);
+  Buffer.contents config
+    
+let config _ =
+  assert_equal
+    "x = y"
+    (parse "%{x = y%}");
+  assert_equal
+    "x = \"%{ y %}\""
+    (parse "%{x = \"%{ y \\%}\"%}");
+  assert_raises
+    (Failure "Unclosed configuration declaration")
+    (fun () -> parse "%{x = \"%{ y \\%}\"")
+
 let suite = 
   "Suite" >:::
     ["Title" >:: title;
@@ -209,7 +233,8 @@ let suite =
      "List" >:: list_t;
      "Table" >:: table;
      "Escape" >:: escape;
-     "Block suit" >:: block_suit]
+     "Block suit" >:: block_suit;
+     "Configuration" >:: config]
 
 let _  =
   run_test_tt_main suite
