@@ -9,7 +9,7 @@
     let acc = flush acc buffer in tok :: acc
 }
 
-let escapable = ['-' '#' '|' '=' '`' '{' '$' '*' '/' '_' '~' '^']
+let escapable = ['-' '#' '|' '=' '`' '{' '$' '*' '/' '_' '~' '^' '\\']
 
 (*** BLOCK MARKERS ***)
 

@@ -182,10 +182,11 @@ let escape _ =
   assert_equal [Paragraph [Plain "__"]] (parse "\\__");
   assert_equal [Paragraph [Plain "~~"]] (parse "\\~~");
   assert_equal [Paragraph [Plain "^"]] (parse "\\^");
+  assert_equal [Paragraph [Plain "\\"]] (parse "\\\\");
   assert_equal [Paragraph [Plain "\\not escapable"]] (parse "\\not escapable");
   assert_equal
-    [Paragraph [Plain "-"; Plain "#"; Plain "|"; Plain "=`{$**//__~~^"]]
-    (parse "\\-\n\\#\n\\|\n\\=\\`\\{\\$\\**\\//\\_\\_\\~~\\^")
+    [Paragraph [Plain "-"; Plain "#"; Plain "|"; Plain "=`{$**//__~~^\\"]]
+    (parse "\\-\n\\#\n\\|\n\\=\\`\\{\\$\\**\\//\\_\\_\\~~\\^\\")
 
 let block_suit _ =
   assert_equal
