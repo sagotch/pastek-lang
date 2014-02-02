@@ -2,7 +2,7 @@
 
 A powerfull lighweight markup language
 
-This is version 20140131.
+This is version 20140202.
 
 == General notes ==
 
@@ -16,9 +16,11 @@ List              # words
                     -- words
                        --- words
                   # words
-                    
-Image (?)         [[filename.jpg]]
-Link (?)          [[label url]]
+
+Image             [[ url || alt plain txt ]]
+
+Link              [[ url << displayed content ]]
+                  [[ url ]]
 
 Bold              **words**
 Italic            //words//
