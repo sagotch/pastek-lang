@@ -27,10 +27,13 @@
 
 %token<int> TITLE OITEM UITEM
 %token<string> PLAIN INLINE_CODE CODE_BLOCK INLINE_SOURCE SOURCE_BLOCK
+               LINK
+%token<string * string> IMAGE
 %token<char> SUP SUB
 %token BOLD ITALIC UNDERLINE STRIKE EMPTYLINE MATH MATH_BLOCK
        TBL_HSEP TBL_START TBL_SEP TBL_END
        SUP_START SUP_END SUB_START SUB_END
+       LINK_END
 %token EOF
 
 %start <AST.document> document
@@ -168,4 +171,6 @@ inline(param):
 | SUP_START inline(param)* SUP_END  { Sup $2 }
 | SUB_START inline(param)* SUB_END { Sub $2 }
 | INLINE_SOURCE { InlineSource $1 }
+| IMAGE { Image (fst $1, snd $1) }
+| LINK inline(param)* LINK_END { Link ($1, $2) }
 | param { $1 }

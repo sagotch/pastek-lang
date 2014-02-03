@@ -195,6 +195,53 @@ let block_suit _ =
      Paragraph [Plain "Dolor sit amet."]]
     (parse "=Lorem\n  ==  Ipsum\n\nDolor sit amet.")
 
+let link _ =
+  assert_equal
+    [Paragraph[Link("foo", [])]]
+    (parse "[[foo]]");
+  assert_equal
+    [Paragraph[Plain "foo "; Link("bar", [])]]
+    (parse "foo [[bar]]");
+  assert_equal
+    [Paragraph[Link("foo[]", [])]]
+    (parse "[[foo[] ]]");
+  assert_equal
+    [Paragraph [Link("foo", [Plain "bar"])]]
+    (parse "[[foo<<bar]]");
+  assert_equal
+    [Paragraph[Link("foo", [Plain "bar"])]]
+    (parse "[[ foo << bar ]]");
+  assert_equal
+    [Paragraph[Link("foo", [Bold[Plain "bar"]])]]
+    (parse "[[ foo << **bar** ]]");
+  assert_equal
+    [Paragraph[Link("foo", [Bold[Plain "bar"]; Plain " bu"])]]
+    (parse "[[ foo << **bar** bu ]]");
+  assert_equal
+    [Paragraph[Link("foo<<bar]]", [])]]
+    (parse "[[ foo\\<<bar\\]\\]]]");
+  assert_equal
+    [Paragraph[Link("foo", [Plain "bar "; Plain "bu"])]]
+    (parse "[[ foo << bar \n           bu]]")
+
+
+let image _ =
+  assert_equal
+    [Paragraph[Image("foo", "bar")]]
+    (parse "[[foo||bar]]");
+  assert_equal
+    [Paragraph[Image("foo", "bar")]]
+    (parse "[[ foo || bar ]]");
+  assert_equal
+    [Paragraph[Image("foo", "bar bu")]]
+    (parse "[[ foo || bar bu ]]");
+  assert_equal
+    [Paragraph[Image("foo|", "bar]")]]
+    (parse "[[foo\\|||bar\\]]]");
+  assert_equal
+    [Paragraph[Link("foo", [Image("bar", "bu")])]]
+    (parse "[[foo<<[[bar||bu]]]]")
+
 let suite = 
   "Suite" >:::
     ["Title" >:: title;
@@ -209,6 +256,8 @@ let suite =
      "List" >:: list_t;
      "Table" >:: table;
      "Escape" >:: escape;
+     "Link" >:: link;
+     "Image" >:: image;
      "Block suit" >:: block_suit]
 
 let _  =

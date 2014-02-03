@@ -10,7 +10,7 @@
     let acc = flush acc buffer in tok :: acc
 }
 
-let escapable = ['-' '#' '|' '=' '`' '{' '$' '*' '/' '_' '~' '^' '\\']
+let escapable = ['-' '#' '|' '=' '`' '{' '$' '*' '/' '_' '~' '^' '\\' '[']
 
 (*** BLOCK MARKERS ***)
 
@@ -65,6 +65,8 @@ and line acc read_buf = parse
 | "_{"
   { sup_sub 1 SUB_END (flush_and_add acc read_buf SUB_START)
             (create 15) lexbuf }
+| "[[" ' '*
+  { url (flush acc read_buf) (create 15) lexbuf }
 | '^' (_ as c)
   { line (flush_and_add acc read_buf (SUP c)) (create 15) lexbuf }
 | '_' (_ as c)
@@ -148,6 +150,48 @@ and sup_sub opened closing acc read_buff = parse
           sup_sub (opened - 1) closing acc read_buff lexbuf) }
 | _ as c { add_char read_buff c;
            sup_sub opened closing acc read_buff lexbuf }
+
+and url acc buff = parse
+| [' ' '\n']* "||" [' ' '\n']*
+  { image (contents buff) acc (create 15) lexbuf }
+| [' ' '\n']* "<<" [' ' '\n']*
+  { link 1 (contents buff) acc (create 15) lexbuf }
+| [' ' '\n']* "]]" [' ' '\n']*
+  { line (LINK_END :: LINK (contents buff) :: acc) (create 15) lexbuf }
+| '\\' (['|' '<' ']'] as c) {add_char buff c; url acc buff lexbuf }
+| _ as c {add_char buff c; url acc buff lexbuf }
+
+and image url acc buff = parse
+| "\\]" { add_char buff ']'; image url acc buff lexbuf }
+| ' '* "]]"
+  { line (IMAGE (url, contents buff) :: acc) (create 15) lexbuf }
+| '\n' ' '* { image url acc buff lexbuf }
+| _ as c { add_char buff c; image url acc buff lexbuf }
+
+and link depth url acc buff = parse
+| "\\["
+  { add_char buff '[';
+    link depth url acc buff lexbuf }
+| "\\]"
+  { add_char buff ']';
+    link depth url acc buff lexbuf }
+| "[["
+  { add_string buff "[[";
+    link (depth + 1) url acc buff lexbuf }
+| (' '* "]]") as s
+  { if depth = 1
+    then let lex = Lexing.from_string (contents buff) in
+         let tokens = line_beginning [] lex in
+         let acc =
+           LINK_END ::
+             List.fold_left
+               (fun acc -> fun tok -> tok :: acc)
+               (LINK url :: acc) tokens in
+         line acc (create 15) lexbuf
+    else (add_string buff s;
+          link (depth - 1) url acc buff lexbuf) }
+| _ as c { add_char buff c;
+           link depth url acc buff lexbuf }
 
 {
   (* Quick and dirty fix to use Menhir with token list *)

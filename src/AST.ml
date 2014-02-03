@@ -18,6 +18,8 @@ type document = block list
    | InlineCode of string
    | InlineSource of string
    | InlineMath of inline list
+   | Image of string  * string
+   | Link of string * inline list
    | Bold of inline list
    | Italic of inline list
    | Underline of inline list
@@ -37,6 +39,7 @@ and string_of_block = function
   | MathBlock l -> "CodeBlock \"" ^ string_of_inlines l ^ "\""
   | Table (head, cont) -> "Table(" ^ string_of_table (head, cont) ^ ")"
   | List l -> string_of_list l
+
 
 and string_of_table (head, cont) =
   (match head with
@@ -75,3 +78,5 @@ and string_of_inline = function
   | InlineMath m -> "Math (" ^ string_of_inlines m ^ ")"
   | Sup s -> "Sup(" ^ string_of_inlines s ^ ")"
   | Sub s -> "Sub(" ^ string_of_inlines s ^ ")"
+  | Image (url, alt) -> "Image(" ^ url ^ ", " ^ alt ^ ")"
+  | Link (url, txt) ->  "Link(" ^ url ^ ", " ^ string_of_inlines txt ^ ")"
