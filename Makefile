@@ -13,18 +13,18 @@ COVERAGE_INC=$(TEST_INC)
 
 all: clean test main.native
 
-test: clean basic_tests.native
-	@./basic_tests.native
+test: clean parser_basic.native
+	@./parser_basic.native
 
 main.native:
 	$(OCAMLBUILD) $(FLAGS) -Is $(INC) main.native
 
-basic_tests.native:
-	$(OCAMLBUILD) $(TEST_FLAGS) -pkgs $(TEST_PKGS) -Is $(TEST_INC) basic_tests.native
+parser_basic.native:
+	$(OCAMLBUILD) $(TEST_FLAGS) -pkgs $(TEST_PKGS) -Is $(TEST_INC) $@
 
 coverage:
-	$(OCAMLBUILD) $(COVERAGE_FLAGS) -pkgs $(TEST_PKGS) -tags $(COVERAGE_TAGS) -Is $(COVERAGE_INC) basic_tests.byte
-	BISECT_FILE=_build/coverage ./basic_tests.byte
+	$(OCAMLBUILD) $(COVERAGE_FLAGS) -pkgs $(TEST_PKGS) -tags $(COVERAGE_TAGS) -Is $(COVERAGE_INC) parser_basic.byte
+	BISECT_FILE=_build/coverage ./parser_basic.byte
 	cd _build && bisect-report -verbose -html report coverage*.out
 
 clean:
