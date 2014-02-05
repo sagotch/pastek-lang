@@ -194,7 +194,7 @@ and link depth url acc buff = parse
            link depth url acc buff lexbuf }
 
 {
-  (* Quick and dirty fix to use Menhir with token list *)
+  (* Dirty fix to use Menhir with token list *)
   let parse lexbuf =
     let tokens = ref @@ line_beginning [] lexbuf in
     let token _ = 

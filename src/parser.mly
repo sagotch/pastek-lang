@@ -1,5 +1,5 @@
 %{
-  open AST
+  open Type
   open Str
 
   let rec add_to_list li (ord, dep, txt) =
@@ -36,7 +36,7 @@
        LINK_END
 %token EOF
 
-%start <AST.document> document
+%start <Type.document> document
 
 %%
 
@@ -71,15 +71,6 @@ header_f:
 | EMPTYLINE+ hf=block_list { hf }
 | hf=header | hf=code_block | hf=source_block | hf=eof | hf=table { hf }
 
-
-(* Paste tables are not fully supported
- * +----------+----------+ <- this line is not allowed
- * |   head1  |  head2   |
- * +----------+----------+
- * | cell 1.1 | cell 1.2 |
- * | cell 1.1 | cell 1.2 |
- * +----------+----------+ <- this one neither
- *)
 table:
 | table_line TBL_HSEP table_line+ table_f
   { Table(Some $1, $3) :: $4 }

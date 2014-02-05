@@ -1,4 +1,4 @@
-open AST
+open Type
 open Render
 
 module Render_html : Content_render = struct

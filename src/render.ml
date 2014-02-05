@@ -1,4 +1,4 @@
-open AST
+open Type
 open Buffer
 
 module type Content_render = sig
@@ -18,7 +18,7 @@ module Render =
   functor (R : Content_render) ->
 struct
   open R
-  let render_ast =
+  let render_doc =
     List.iter
       (function
         | Title(level, inlines) -> render_title level inlines

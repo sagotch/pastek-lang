@@ -1,5 +1,5 @@
 open OUnit
-open AST
+open Type
 open Lexer
 
 let assert_equal ctxt = assert_equal ~printer:string_of_document ctxt
