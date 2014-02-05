@@ -36,8 +36,22 @@ module Render_html : Content_render = struct
          add_string "<del>";
          render_inlines inlines;
          add_string "</del>"
-      | Sup(c) -> add_string "<sup>"; add_char c; add_string "</sup>"
-      | Sub(c) -> add_string "<sub>"; add_char c; add_string "</sub>"
+      | Sup(inlines) -> add_string "<sup>";
+                        render_inlines inlines;
+                        add_string "</sup>"
+      | Sub(inlines) -> add_string "<sub>";
+                        render_inlines inlines;
+                        add_string "</sub>"
+      | Image (url, txt) -> add_string "<img src=\"";
+                            add_string url;
+                            add_string "\" alt=\"";
+                            add_string txt;
+                            add_string "\" />"
+      | Link (url, inlines) -> add_string "<a href=\"";
+                               add_string url;
+                               add_string "\">";
+                               render_inlines inlines;
+                               add_string "</a>"
     in List.iter render_inline inlines
 
   and render_title lvl inlines =
