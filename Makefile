@@ -11,13 +11,15 @@ COVERAGE_FLAGS=$(TEST_FLAGS)
 COVERAGE_TAGS=package\(bisect\),syntax\(camlp4o\),syntax\(bisect_pp\)
 COVERAGE_INC=$(TEST_INC)
 
-all: clean test main.native
+EXEC=pastek
+
+all: clean test $(EXEC).native
 
 test: clean parser_basic.native
 	@./parser_basic.native
 
-main.native:
-	$(OCAMLBUILD) $(FLAGS) -Is $(INC) main.native
+$(EXEC).native:
+	$(OCAMLBUILD) $(FLAGS) -Is $(INC) $@
 
 parser_basic.native:
 	$(OCAMLBUILD) $(TEST_FLAGS) -pkgs $(TEST_PKGS) -Is $(TEST_INC) $@
