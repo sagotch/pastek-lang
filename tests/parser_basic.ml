@@ -5,7 +5,7 @@ open Lexer
 let assert_equal ctxt = assert_equal ~printer:string_of_document ctxt
 let parse str =
   let lexbuf = Lexing.from_string str in
-  Lexer.parse lexbuf
+  snd @@ Lexer.parse lexbuf
 
 let title _ =
   assert_equal

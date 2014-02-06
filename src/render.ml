@@ -1,33 +1,37 @@
 open Type
 open Buffer
+open TomlType
 
-module type Content_render = sig
-    (** Functions of this module are expected to write rendering in
+class virtual render (config : TomlType.tomlTable) = object (self)
+    (** Functions of this object are expected to write rendering in
      *  the buffer nammed buffer *)
-    val buffer : Buffer.t
-    val render_title : int -> inline list -> unit
-    val render_paragraph : inline list -> unit
-    val render_math_block : inline list -> unit
-    val render_table : inline list list option -> inline list list list -> unit
-    val render_list : list_t -> unit
-    val render_code_block : string -> unit
-    val render_source_block : string -> unit
-  end
-  
-module Render =
-  functor (R : Content_render) ->
-struct
-  open R
-  let render_doc =
-    List.iter
-      (function
-        | Title(level, inlines) -> render_title level inlines
-        | Paragraph(inlines) -> render_paragraph inlines
-        | MathBlock(inlines) -> render_math_block inlines
-        | Table(headers, content) -> render_table headers content
-        | List(li) -> render_list li
-        | CodeBlock(data) -> render_code_block data
-        | SourceBlock(data) -> render_source_block data)
+    val buffer = Buffer.create 0
+    val config = config
 
-  let get_buffer_content = fun () -> Buffer.contents R.buffer
-end
+    method virtual render_title : int -> inline list -> unit
+    method virtual render_paragraph : inline list -> unit
+    method virtual render_math_block : inline list -> unit
+    method virtual render_table :
+             inline list list option -> inline list list list -> unit
+    method virtual render_list : list_t -> unit
+    method virtual render_code_block : string -> unit
+    method virtual render_source_block : string -> unit
+    method virtual pre_render : unit -> unit
+    method virtual post_render : unit -> unit
+
+    method render_doc doc =
+      self#pre_render ();
+      List.iter
+        (function
+          | Title(level, inlines) -> self#render_title level inlines
+          | Paragraph(inlines) -> self#render_paragraph inlines
+          | MathBlock(inlines) -> self#render_math_block inlines
+          | Table(headers, content) -> self#render_table headers content
+          | List(li) -> self#render_list li
+          | CodeBlock(data) -> self#render_code_block data
+          | SourceBlock(data) -> self#render_source_block data)
+        doc;
+      self#post_render ()
+
+    method get_render = Buffer.contents buffer
+  end

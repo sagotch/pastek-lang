@@ -1,6 +1,6 @@
 OCAMLBUILD=ocamlbuild
 
-FLAGS=-use-ocamlfind -yaccflags --explain -use-menhir -lib str
+FLAGS=-use-ocamlfind -yaccflags --explain -use-menhir -package str,toml
 INC=src
 
 TEST_FLAGS=$(FLAGS)

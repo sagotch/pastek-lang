@@ -1,6 +1,7 @@
 {
   open Buffer
   open Parser
+  open Toml
 
   let flush acc buffer =
     let txt = contents buffer in
@@ -193,13 +194,29 @@ and link depth url acc buff = parse
 | _ as c { add_char buff c;
            link depth url acc buff lexbuf }
 
+(*** CONFIGURATION ***)
+and first_line = parse
+| ['\n' ' '] { first_line lexbuf }
+| "%{" { config (Buffer.create 15) lexbuf }
+| "" { (Hashtbl.create 0), (line_beginning [] lexbuf) }
+
+
+(* "%}" point the end of configuration part.
+ * It may be escaped *)
+and config buff = parse
+| "\\%}" { add_string buff "%}"; config buff lexbuf }
+| "%}" { (Toml.from_string (Buffer.contents buff)),
+         line_beginning [] lexbuf }
+| _ as c { add_char buff c; config buff lexbuf }
+
 {
   (* Dirty fix to use Menhir with token list *)
   let parse lexbuf =
-    let tokens = ref @@ line_beginning [] lexbuf in
+    let config, tokens = first_line lexbuf in
+    let tokens = ref tokens in
     let token _ = 
       match !tokens with 
       | []     -> EOF 
       | h :: t -> tokens := t ; h 
-    in Parser.document token @@ Lexing.from_string ""
+    in config, Parser.document token @@ Lexing.from_string ""
 }
