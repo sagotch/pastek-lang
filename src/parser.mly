@@ -27,9 +27,9 @@
 
 %token<int> TITLE OITEM UITEM
 %token<string> PLAIN INLINE_CODE CODE_BLOCK INLINE_SOURCE SOURCE_BLOCK
-               LINK
+               LINK HTML_ENTITIE
 %token<string * string> IMAGE
-%token<char> SUP SUB
+%token<char> SUP SUB GREEK_LETTER
 %token BOLD ITALIC UNDERLINE STRIKE EMPTYLINE MATH MATH_BLOCK
        TBL_HSEP TBL_START TBL_SEP TBL_END
        SUP_START SUP_END SUB_START SUB_END
@@ -164,4 +164,6 @@ inline(param):
 | INLINE_SOURCE { InlineSource $1 }
 | IMAGE { Image (fst $1, snd $1) }
 | LINK inline(param)* LINK_END { Link ($1, $2) }
+| HTML_ENTITIE { HTMLEntitie $1 }
+| GREEK_LETTER { GreekLetter $1 }
 | param { $1 }

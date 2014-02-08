@@ -242,6 +242,31 @@ let image _ =
     [Paragraph[Link("foo", [Image("bar", "bu")])]]
     (parse "[[foo<<[[bar||bu]]]]")
 
+let html_entitie _ =
+  assert_equal
+    [Paragraph[Plain "x "; HTMLEntitie "isin"; Plain " N"]]
+    (parse "x &isin; N");
+  assert_equal
+    [Paragraph[Plain "x "; HTMLEntitie "#60"; Plain " y"]]
+    (parse "x &#60; y");
+  assert_equal
+    [Paragraph[Plain "x"; HTMLEntitie "sup2"; Plain " = y"]]
+    (parse "x&sup2; = y");
+  assert_equal
+    [Paragraph[Plain "& loremp ipsum;"]]
+    (parse "& loremp ipsum;");
+  assert_equal
+    [Paragraph[Plain "&#loremp; &42;"]]
+    (parse "&#loremp; &42;")
+
+let greek_letter _ =
+  assert_equal
+    [Paragraph[GreekLetter 'a'; Plain "+"; GreekLetter 'b']]
+    (parse "&a+&b");
+  assert_equal
+    [Paragraph[GreekLetter 'a'; Plain "+"; GreekLetter 'b'; Plain "+1;"]]
+    (parse "&a+&b+1;")
+
 let suite = 
   "Suite" >:::
     ["Title" >:: title;
@@ -258,6 +283,8 @@ let suite =
      "Escape" >:: escape;
      "Link" >:: link;
      "Image" >:: image;
+     "HTML entitie" >:: html_entitie;
+     "Greek letter" >:: greek_letter;
      "Block suit" >:: block_suit]
 
 let _  =

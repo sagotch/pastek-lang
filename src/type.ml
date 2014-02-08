@@ -26,6 +26,10 @@ type document = block list
    | Strike of inline list
    | Sup of inline list
    | Sub of inline list
+   | HTMLEntitie of string
+   | GreekLetter of char
+
+let string_of_char c = String.make 1 c
 
 let rec string_of_document doc =
   String.concat "\n" @@ List.map string_of_block doc
@@ -80,3 +84,5 @@ and string_of_inline = function
   | Sub s -> "Sub(" ^ string_of_inlines s ^ ")"
   | Image (url, alt) -> "Image(" ^ url ^ ", " ^ alt ^ ")"
   | Link (url, txt) ->  "Link(" ^ url ^ ", " ^ string_of_inlines txt ^ ")"
+  | HTMLEntitie e -> "HTMLEntitie(" ^ e ^ ")"
+  | GreekLetter l -> "GreekLetter(" ^ string_of_char l ^ ")"

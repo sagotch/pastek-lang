@@ -84,6 +84,10 @@ and line acc read_buf = parse
 | '\\' (escapable as c)
   { add_char read_buf c;
     line acc read_buf lexbuf }
+| '&' ((('#' ['0'-'9']+) | ['a'-'z']['a'-'z' '0'-'9']+) as e) ';'
+  { line (flush_and_add acc read_buf (HTML_ENTITIE e)) (create 15) lexbuf }
+| '&' (['a'-'z' 'A'-'Z'] as c)
+  { line (flush_and_add acc read_buf (GREEK_LETTER c)) (create 15) lexbuf }
 | _ as c
   { add_char read_buf c;
     line acc read_buf lexbuf }
