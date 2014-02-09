@@ -1,8 +1,8 @@
-= Pastek =
+= pastek =
 
-A powerfull lighweight markup language
+A powerfull lightweight markup language
 
-This is version 20140202.
+This is version 20140209.
 
 == General notes ==
 
@@ -30,16 +30,21 @@ Inline code       ``words``
 Inline source     {{words}}
 Inline Math       $$words$$
 
+Subscript         _i (one sign)
+                  _{index} (several signs)
+Superscript       ^i (one sign)
+                  ^{index} (several signs)
+
+HTML entitie      &#60;
+                  &isin;
+
+Greek letter      &a
+
 Table             |  head1  |  head2  |  head3  | (optionnal
                   +-----------------------------+  pair)
                   | cell1.1 | cell1.2 | cell1.3 |
                   | cell2.1 | cell2.2 | cell2.3 |
 		  (pipes, plus and minus do not have to match)
-
-Subscript         _i (one sign)
-                  _{index} (several signs)
-Superscript       ^i (one sign)
-                  ^{index} (several signs)
 
 Code block        ```
                   let triple_backquoted =
