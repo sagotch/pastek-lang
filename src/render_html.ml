@@ -3,9 +3,34 @@ open Render
 open TomlType
 open Unix
 
+let greek_letters = [
+  'a', "alpha";
+  'b', "beta";
+  'g', "gamma";
+  'd', "delta";
+  'e', "epsilon";
+  'z', "zeta";
+  't', "tau";
+  'i', "iota";
+  'k', "kappa";
+  'l', "lambda";
+  'm', "mu";
+  'n', "nu";
+  'o', "omicron";
+  'p', "pi";
+  'r', "rho";
+  's', "sigma";
+  'u', "upsilon";
+  'c', "chi";
+  'w', "omega";
+  'y', "#968"
+]
+
 class render_html (config : TomlType.tomlTable) = object(self)
 
   inherit render config as super
+
+  method private add_char = Buffer.add_char buffer
 
   method private add_string = Buffer.add_string buffer
                                      
@@ -52,6 +77,17 @@ class render_html (config : TomlType.tomlTable) = object(self)
                                self#add_string "\">";
                                self#render_inlines inlines;
                                self#add_string "</a>"
+      | HTMLEntitie e -> self#add_char '&';
+                         self#add_string e;
+                         self#add_char ';';
+      | GreekLetter l ->
+         self#add_char '&';
+         let name =  List.assoc (Char.lowercase l) greek_letters in
+         if Char.lowercase l = l
+         then self#add_string name
+         else self#add_string (String.capitalize name);
+         self#add_char ';'
+         
     in List.iter render_inline inlines
 
 
