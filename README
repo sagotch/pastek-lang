@@ -2,7 +2,7 @@
 
 A powerful lightweight markup language
 
-This is version 20140209.
+This is version 20140210.
 
 == General notes ==
 
@@ -51,12 +51,12 @@ Code block        ```
                     "Code block"
                   ```
 
-External command  ```dot
+External command  %%%dot
                   graph graphname {
                       a -- b -- c;
                       b -- d;
                   }
-                  ```
+                  %%%
 
 Source block      {{{<span style="color:blue">Inline source code.</span>}}}
                   {{{
