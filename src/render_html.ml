@@ -33,13 +33,19 @@ class render_html (config : TomlType.tomlTable) = object(self)
   method private add_char = Buffer.add_char buffer
 
   method private add_string = Buffer.add_string buffer
+
+  method private esc_add_str str =
+    let rep = ["<", "&lt;"; ">", "&gt;"; "&", "&amp;"] in
+    self#add_string
+    @@ List.fold_left (fun str (reg, rep) ->
+                       Str.global_replace (Str.regexp reg) rep str) str rep
                                      
   method private add_strings = List.iter self#add_string
 
   method private render_inlines = fun inlines ->
     let render_inline = function
-      | Plain(str) -> self#add_string str
-      | InlineCode(str) -> self#add_string str
+      | Plain(str) -> self#esc_add_str str
+      | InlineCode(str) -> self#esc_add_str str
       | InlineSource(str) -> self#add_string str
       | InlineMath(inlines) ->
          self#add_string "<span class=\"inline_math\">";
@@ -185,7 +191,9 @@ class render_html (config : TomlType.tomlTable) = object(self)
       items
 
   method render_code_block data =
-    self#add_strings ["<pre>\n<code>\n"; data; "</pre>\n</code>\n"]
+    self#add_string "<pre>\n<code>\n";
+    self#esc_add_str data;
+    self#add_string "</pre>\n</code>\n"
 
   method render_source_block data =
     self#add_string data
