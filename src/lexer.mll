@@ -44,6 +44,8 @@ and line acc buffer = parse
 | "```" '\n'?                { code_block (acc <<< buffer) (create 42) lexbuf }
 | "{{{" '\n'?              { source_block (acc <<< buffer) (create 42) lexbuf }
 | "$$$" '\n'?        { line (acc <<< buffer << MATH_BLOCK) (create 42) lexbuf }
+| "%%%" ([^' ' '\n']+ as cmd) '\n'?
+                         { ext_render cmd (acc <<< buffer) (create 42) lexbuf }
 | "**"                     { line (acc <<< buffer << BOLD) (create 42) lexbuf }
 | "//"                   { line (acc <<< buffer << ITALIC) (create 42) lexbuf }
 | "__"                { line (acc <<< buffer << UNDERLINE) (create 42) lexbuf }
@@ -67,6 +69,11 @@ and line acc buffer = parse
                  { line (acc <<< buffer << GREEK_LETTER c) (create 42) lexbuf }
 | _ as c                                      { line acc (c >> buffer) lexbuf }
 | eof                                          { List.rev @@ (acc <<< buffer) }
+
+and ext_render cmd acc buffer = parse
+| "\\%"                           { ext_render cmd acc ('%' >> buffer) lexbuf }
+| '\n'? "%%%"     { line_beginning (acc << EXT (cmd, contents buffer)) lexbuf }
+| _ as c                            { ext_render cmd acc (c >> buffer) lexbuf }
 
 and inline_code acc buffer = parse
 | "``"       { line (acc << INLINE_CODE (contents buffer)) (create 42) lexbuf }

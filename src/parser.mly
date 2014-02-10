@@ -28,7 +28,7 @@
 %token<int> TITLE OITEM UITEM
 %token<string> PLAIN INLINE_CODE CODE_BLOCK INLINE_SOURCE SOURCE_BLOCK
                LINK HTML_ENTITIE
-%token<string * string> IMAGE
+%token<string * string> IMAGE EXT
 %token<char> SUP SUB GREEK_LETTER
 %token BOLD ITALIC UNDERLINE STRIKE EMPTYLINE MATH MATH_BLOCK
        TBL_HSEP TBL_START TBL_SEP TBL_END
@@ -47,7 +47,7 @@ document:
 
 block_list:
 | bl=header | bl=paragraph | bl=code_block | bl=source_block | bl=math_block
-| bl=eof | bl=list_t | bl=table { bl }
+| bl=eof | bl=list_t | bl=table | bl=ext { bl }
 
 eof:
 | EOF { [] }
@@ -69,7 +69,8 @@ header:
 
 header_f:
 | EMPTYLINE+ hf=block_list { hf }
-| hf=header | hf=code_block | hf=source_block | hf=eof | hf=table { hf }
+| hf=header | hf=code_block | hf=source_block | hf=eof | hf=table | hf=ext
+  { hf }
 
 table:
 | table_line TBL_HSEP table_line+ table_f
@@ -83,7 +84,7 @@ table_line:
 
 table_f:
 | tf=header | tf=paragraph | tf=code_block | tf=source_block | tf=math_block
-| tf=eof | tf=list_t { tf }
+| tf=eof | tf=list_t | tf=ext { tf }
 | EMPTYLINE+ block_list { $2 }
 
 list_t:
@@ -95,14 +96,15 @@ item_t:
 
 list_t_f:
 | lf=header | lf=code_block | lf=math_block | lf=table | lf=source_block
-| lf=eof { lf }
+| lf=eof | lf=ext { lf }
 | EMPTYLINE+ lf=block_list { lf }
 
 paragraph:
 | inline(regular)+ paragraph_f { Paragraph $1 :: $2 }
 
 paragraph_f:
-| pf=header | pf=eof | pf=code_block | pf=source_block | pf=table { pf }
+| pf=header | pf=eof | pf=code_block | pf=source_block | pf=table | pf=ext
+  { pf }
 | EMPTYLINE+ block_list { $2 }
 
 code_block:
@@ -121,6 +123,12 @@ math_block:
 | MATH_BLOCK inline(math)+ MATH_BLOCK math_block_f { MathBlock $2 :: $4 }
 
 math_block_f:
+| EMPTYLINE* block_list { $2 }
+
+ext:
+| EXT ext_f { ExternRender (fst $1, snd $1) :: $2 }
+
+ext_f:
 | EMPTYLINE* block_list { $2 }
 
 (*** INLINE ELEMENTS ***)

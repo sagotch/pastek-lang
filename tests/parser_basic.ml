@@ -267,6 +267,19 @@ let greek_letter _ =
     [Paragraph[GreekLetter 'a'; Plain "+"; GreekLetter 'b'; Plain "+1;"]]
     (parse "&a+&b+1;")
 
+let extern _ =
+  assert_equal
+    [ExternRender("dot", " graph g{\na -- b -- c;\nb -- d;\n}")]
+    (parse "%%%dot graph g{\na -- b -- c;\nb -- d;\n}%%%");
+  assert_equal
+    [ExternRender("dot", " graph g{\na -- b -- c;\nb -- d;\n}")]
+    (parse "%%%dot\n graph g{\na -- b -- c;\nb -- d;\n}\n%%%");  assert_equal
+    [ExternRender("foo", " %%% %"); Paragraph [Plain "%%"]]
+    (parse "%%%foo \\%%% \\%%%%%%");
+  assert_equal
+    [Paragraph [Plain "%%% dot"]]
+    (parse "%%% dot")
+                                                               
 let suite = 
   "Suite" >:::
     ["Title" >:: title;
@@ -285,6 +298,7 @@ let suite =
      "Image" >:: image;
      "HTML entitie" >:: html_entitie;
      "Greek letter" >:: greek_letter;
+     "Extern rendering" >:: extern;
      "Block suit" >:: block_suit]
 
 let _  =

@@ -8,6 +8,7 @@ type document = block list
    | List of list_t
    | CodeBlock of string
    | SourceBlock of string
+   | ExternRender of string * string
 
  and list_t = bool * item_t list
 
@@ -43,7 +44,7 @@ and string_of_block = function
   | MathBlock l -> "CodeBlock \"" ^ string_of_inlines l ^ "\""
   | Table (head, cont) -> "Table(" ^ string_of_table (head, cont) ^ ")"
   | List l -> string_of_list l
-
+  | ExternRender (cmd, src) -> "ExternRender(" ^ cmd ^ ", " ^ src ^ ")"
 
 and string_of_table (head, cont) =
   (match head with
