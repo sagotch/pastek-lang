@@ -16,6 +16,7 @@ class virtual render (config : TomlType.tomlTable) = object (self)
     method virtual render_list : list_t -> unit
     method virtual render_code_block : string -> unit
     method virtual render_source_block : string -> unit
+    method virtual render_extern : string -> string -> unit
     method virtual pre_render : unit -> unit
     method virtual post_render : unit -> unit
 
@@ -29,7 +30,8 @@ class virtual render (config : TomlType.tomlTable) = object (self)
           | Table(headers, content) -> self#render_table headers content
           | List(li) -> self#render_list li
           | CodeBlock(data) -> self#render_code_block data
-          | SourceBlock(data) -> self#render_source_block data)
+          | SourceBlock(data) -> self#render_source_block data
+          | ExternRender(cmd, data) -> self#render_extern cmd data)
         doc;
       self#post_render ()
 

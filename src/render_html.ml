@@ -198,4 +198,28 @@ class render_html (config : TomlType.tomlTable) = object(self)
   method render_source_block data =
     self#add_string data
 
+  method render_extern cmd data =
+
+    let input_to_string input =
+      let rec loop buffer =
+        match try Some ((input_line input) ^ "\n")
+              with End_of_file -> None
+        with
+        | Some s -> Buffer.add_string buffer s; loop buffer
+        | None -> Buffer.contents buffer
+      in loop (Buffer.create 42) in
+
+    let get_cmd_output cmd src =
+      let (output, input) = Unix.open_process cmd in
+      output_string input src;
+      flush input;
+      close_out input;
+      let res = input_to_string output in
+      close_in output;
+      res in
+
+    let cmd = 
+      Toml.get_string (Toml.get_table (Toml.get_table config "cmd") cmd) "cmd"
+    in self#add_string @@ get_cmd_output cmd data
+
 end
