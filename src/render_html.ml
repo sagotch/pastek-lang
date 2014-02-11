@@ -218,8 +218,7 @@ class render_html (config : TomlType.tomlTable) = object(self)
       close_in output;
       res in
 
-    let cmd = 
-      Toml.get_string (Toml.get_table (Toml.get_table config "cmd") cmd) "cmd"
+    let cmd = Toml.get_string (Toml.get_table config "cmd") cmd
     in self#add_string @@ get_cmd_output cmd data
 
 end
