@@ -1,6 +1,6 @@
 = pastek =
 
-A powerful lightweight markup language
+A powerful lightweight markup language.
 
 This is version 20140210.
 
@@ -76,26 +76,6 @@ Math block        $$$
 Configuration is written in TOML. It can be provided by a configuration file, 
 a special header in a document (written inside %{ and }% tags), or by a 
 combination of both. Each rendering module could expect different 
-configuration, so look at their documentation for details.
+configuration, so look at their documentation for details:
 
-Here is an example of configuration informations included at the beginning of a
-document rendered by ``Render_html`` module.
-
-%{
-[css]
-    
-    [css.default]
-    url = "https://raw.github.com/sagotch/pastek/res/pastek_default.css"
-    inline = false # default behavior so you may remove this line
-                   # produce lighter documents
-    [css.custom]
-    url = "/home/foo/bar.css"
-    inline = true # inlining allow to copy content of the file in
-                  # document header
-
-[cmd]
-   [cmd.dot]
-   cmd = "dot -Tsvg - -"
-   [cmd.hopt]
-   cmd = "~/html_tool/hopt"
-%}
+  - [[ doc/html_render << HTML rendering module ]]

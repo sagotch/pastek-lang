@@ -1,0 +1,38 @@
+= HTML renderer =
+
+== Configuration ==
+
+- ``css`` table contains informations about CSS. If provided, ``inline`` field 
+  will define the default behavior for css inlining (ohterwise, default value 
+  for CSS inlining is ``false``).
+  -- Children tables define stylesheets to include.
+     --- The ``inline`` field is one more time optionnal and allow you to 
+         overwrite default behavior.
+     --- The ``url`` field can not be omitted.
+- ``cmd`` table contains informations about command used in the document for 
+  external rendering. Entries are simples ``(key, value)`` pairs:
+  -- ``key`` is the name of the rule as written into the document.
+  -- ``value`` is the actual command to invoke (as it would be called in a 
+     shell). It **must** read from standard input and write result on standard 
+     output.
+
+== Example ==
+
+```
+%{
+[css]
+    
+    [css.default]
+    url = "https://raw.github.com/sagotch/pastek/res/pastek_default.css"
+    inline = false # default behavior so you may remove this line
+                   # produce lighter documents
+    [css.custom]
+    url = "/home/foo/bar.css"
+    inline = true # inlining allow to copy content of the file in
+                  # document header
+
+[cmd]
+   dot = "dot -Tsvg - -"
+   hopt = "~/html_tool/hopt"
+%}
+```
