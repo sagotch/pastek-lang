@@ -32,3 +32,4 @@ coverage:
 clean:
 	ocamlbuild -clean
 	find . -name "*~" -exec rm {} \;
+	find . -name "#*#" -exec rm {} \;
