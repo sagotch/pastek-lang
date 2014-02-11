@@ -81,3 +81,22 @@ combination of both. Each rendering module could expect different
 configuration, so look at their documentation for details:
 
   - [[ doc/html_render << HTML rendering module ]]
+
+== Want to help ? ==
+
+=== Test, review, find bugs ===
+
+Play around with ``pastek``, break the parser. If you find a bug, an 
+unexpected behavior or if you think something in the grammar where badly 
+choosen, open an issue to report it.
+
+=== Missing feature ===
+
+Open an issue to ask for a new feature.
+
+=== New output format ===
+
+Open an issue and ask for a new output format.
+
+Or better, fork the repo, add a module implementing the ``render.mli`` 
+signature and submit it as a pull request.
