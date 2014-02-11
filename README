@@ -10,6 +10,7 @@ This is version 20140210.
 
 == Syntax ==
 
+```
 Title             = words = (closing '=' are optionnal)
 List              # words
                     -- words
@@ -46,10 +47,10 @@ Table             |  head1  |  head2  |  head3  | (optionnal
                   | cell2.1 | cell2.2 | cell2.3 |
 		  (pipes, plus and minus do not have to match)
 
-Code block        ```
+Code block        \```
                   let triple_backquoted =
                     "Code block"
-                  ```
+                  \```
 
 External command  %%%dot
                   graph graphname {
@@ -70,6 +71,7 @@ Math block        $$$
                                                   a^2 + b^2 = c^2
                   ...
                   $$$
+```
 
 == Configuration ==
 
