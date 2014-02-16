@@ -34,6 +34,12 @@ sudo make install # ./configure set PATH_OCAML_PREFIX=/usr instead of
                   # using .opam directory, so we need sudo
 cd ..
 
+# install Toml library from source (not available on opam yet)
+git clone https://github.com/sagotch/To.ml.git
+cd To.ml
+make build && make install
+cd ..
+
 # run test, then send result to coveralls
 echo '** TEST CODE COVERAGE'
 make test
