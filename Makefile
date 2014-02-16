@@ -43,4 +43,6 @@ COVERAGE_INC=$(TEST_INC)
 coverage:
 	$(OCAMLBUILD) $(COVERAGE_FLAGS) -pkgs $(TEST_PKGS) -tags $(COVERAGE_TAGS) -Is $(COVERAGE_INC) parser_basic.byte
 	BISECT_FILE=_build/coverage ./parser_basic.byte
+
+report: coverage
 	cd _build && bisect-report -verbose -html report coverage*.out
