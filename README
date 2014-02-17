@@ -1,5 +1,9 @@
 = pastek =
 
+[[https://travis-ci.org/pastek-project/pastek.png || Build Status]] 
+[[https://coveralls.io/repos/pastek-project/pastek/badge.png || 
+  Coverage Status]]
+
 A powerful lightweight markup language.
 
 This is version 20140210.
