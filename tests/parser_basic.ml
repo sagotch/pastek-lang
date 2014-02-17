@@ -222,7 +222,13 @@ let link _ =
     (parse "[[ foo\\<<bar\\]\\]]]");
   assert_equal
     [Paragraph[Link("foo", [Plain "bar "; Plain "bu"])]]
-    (parse "[[ foo << bar \n           bu]]")
+    (parse "[[ foo << bar \n           bu]]");
+  assert_equal
+    [Paragraph[Link("foo/bar", [Plain "bu"])]]
+    (parse "[[ foo\n   /bar << bu]]");
+  assert_equal
+    [Paragraph[Link("foo<<bar", [Plain "bu"])]]
+    (parse "[[ foo\n   \\<<bar << bu]]")
 
 
 let image _ =

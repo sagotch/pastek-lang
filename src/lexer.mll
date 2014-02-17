@@ -117,7 +117,8 @@ and url acc buff = parse
 | [' ' '\n']* "]]" [' ' '\n']*
          { line ( acc << LINK (contents buff) << LINK_END) (create 42) lexbuf }
 | '\\' (['|' '<' ']'] as c)                      { url acc (c >> buff) lexbuf }
-| _ as c                                         { url acc (c >> buff) lexbuf }
+| ('\n' ' '*)?                                          { url acc buff lexbuf }
+|  _ as c                                        { url acc (c >> buff) lexbuf }
 
 and image url acc buff = parse
 | "\\]"                                  { image url acc (']' >> buff) lexbuf }
