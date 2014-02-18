@@ -127,7 +127,7 @@ class render_html (config : TomlType.tomlTable) = object(self)
              if try Toml.get_bool v "inline" with Not_found -> inline_default
              then inline_css url
              else link_css url)
-            (Toml.get_tables css)
+            (Toml.tables_to_list css)
       with Not_found -> ()
     end;
     self#add_string "</head>\n<body>\n"
