@@ -104,7 +104,8 @@ paragraph:
 | inline(regular)+ paragraph_f { Paragraph $1 :: $2 }
 
 paragraph_f:
-| pf=header | pf=eof | pf=code_block | pf=source_block | pf=table | pf=ext
+| pf=header | pf=eof | pf=code_block | pf=source_block | pf=math_block
+| pf=table | pf=ext | pf=list_t
   { pf }
 | EMPTYLINE+ block_list { $2 }
 

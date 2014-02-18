@@ -113,10 +113,59 @@ let list_followers _ =
   check "%%%Lorem\nIpsum%%%" any_sep;
   check "%%%Lorem Ipsum%%%" any_sep
 
+
+let paragraph_followers _ =
+
+  let paragraph = "Lorem" in
+
+  let check str =
+    check (parse paragraph) paragraph (parse str) str in
+
+  (* eof *)
+  check "" any_sep;
+
+  (* title *)
+  check " ==   Ipsum" eol;
+  assert_equal [Paragraph[Plain"Lorem == Ipsum"]]
+               (parse("Lorem == Ipsum"));
+
+  (* list *)
+  check "-Ipsum" eol;
+  check "#Ipsum" eol;
+  assert_equal [Paragraph[Plain"Lorem -Ipsum"]]
+               (parse("Lorem -Ipsum"));
+  assert_equal [Paragraph[Plain"Lorem -Ipsum"]]
+               (parse("Lorem -Ipsum"));
+
+  (* code block *)
+  check "```Ipsum```" any_sep;
+
+  (* source block *)
+  check "{{{Ipsum}}}" any_sep;
+
+  (* table *)
+  check "|Ipsum|" eol;
+  (* '|' is not allowed as a character *)
+
+  (* math block *)
+  check "$$$Ipsum$$$" any_sep;
+  
+  (* paragraph*)
+  check "Ipsum" emptyline;
+  assert_equal [Paragraph[Plain"Lorem Ipsum"]]
+               (parse("Lorem Ipsum"));
+  assert_equal [Paragraph[Plain"Lorem";Plain"Ipsum"]]
+               (parse("Lorem\nIpsum"));
+
+  (* ext *)
+  check "%%%Lorem\nIpsum%%%" any_sep;
+  check "%%%Lorem Ipsum%%%" any_sep
+
 let suite = 
   "Suite" >:::
     ["Title followers" >:: title_followers;
-     "List followers" >:: list_followers]
+     "List followers" >:: list_followers;
+     "Paragraph followers" >:: paragraph_followers]
 
 let _ =
   run_test_tt_main suite
