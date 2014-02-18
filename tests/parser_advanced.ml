@@ -66,9 +66,57 @@ let title_followers _ =
   check "%%%Lorem\nIpsum%%%" any_sep;
   check "%%%Lorem Ipsum%%%" any_sep
 
+let list_followers _ =
+
+  let list = "- Lorem" in
+
+  let check str =
+    check (parse list) list (parse str) str in
+
+  (* eof *)
+  check "" any_sep;
+
+  (* title *)
+  check "=Ipsum" eol;
+  assert_equal [List(false,[Item([Plain"Lorem =Ipsum"],None)])]
+               (parse("-Lorem =Ipsum"));
+
+  (* list *)
+  check "--Ipsum" emptyline;
+  assert_equal [List(false,[Item([Plain"Lorem"],
+                                 Some(false,[Item([Plain"Ipsum"],None)]))])]
+               (parse("-Lorem\n--Ipsum"));
+  assert_equal [List(false,[Item([Plain"Lorem --Ipsum"],None)])]
+               (parse("-Lorem --Ipsum"));
+
+  (* code block *)
+  check "```Ipsum```" any_sep;
+
+  (* source block *)
+  check "{{{Ipsum}}}" any_sep;
+
+  (* table *)
+  check "|Ipsum|" eol;
+  (* '|' is not allowed as a character *)
+
+  (* math block *)
+  check "$$$Ipsum$$$" any_sep;
+  
+  (* paragraph*)
+  check "Ipsum" emptyline;
+  assert_equal [List(false,[Item([Plain"Lorem Ipsum"],None)])]
+               (parse("-Lorem Ipsum"));
+  assert_equal [List(false,[Item([Plain"Lorem";Plain"Ipsum"],None)])]
+               (parse("-Lorem\nIpsum"));
+
+  (* ext *)
+  check "%%%Lorem\nIpsum%%%" any_sep;
+  check "%%%Lorem Ipsum%%%" any_sep
+
 let suite = 
   "Suite" >:::
-    ["Title followers" >:: title_followers]
+    ["Title followers" >:: title_followers;
+     "List followers" >:: list_followers]
 
 let _ =
   run_test_tt_main suite
