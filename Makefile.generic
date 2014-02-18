@@ -1,0 +1,47 @@
+CAMLC=ocamlfind ocamlc $(INC) -package $(PCKGS)
+CAMLOPT=ocamlopt
+CAMLLEX=ocamllex
+CAMLYACC=menhir
+
+%.cmo: %.ml
+	$(CAMLC) -c $<
+
+%.cmi:%.mli
+	$(CAMLC) -c $<
+
+%.cmi:%.ml
+	$(CAMLC)  -i $<
+
+%.cmx:%.ml
+	$(CAMLOPT)-c $<
+
+%.ml:%.mll
+	$(CAMLLEX) $<
+
+%.cmo:%.mll
+	$(CAMLLEX) $<
+	$(CAMLC) -c $*.ml
+
+%.cmx:%.mll
+	$(CAMLLEX) $<
+	$(CAMLOPT)-c $*.ml
+
+%.cmo:.mly
+	$(CAMLYACC) $<
+	$(CAMLC) -c $*.mli
+	$(CAMLC) -c $*.ml
+
+%.cmx:%.mly
+	$(CAMLYACC) $<
+	$(CAMLOPT) -c $*.mli
+	$(CAMLOPT) -c $*.ml
+
+%.cmi:%.mly
+	$(CAMLYACC) $<
+	$(CAMLC) -c $*.mli
+
+%.ml %.mli:%.mly
+	$(CAMLYACC) $<
+
+generic_clean:
+	rm -f *.cmi *.cmo *~
