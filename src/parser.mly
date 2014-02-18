@@ -69,7 +69,8 @@ header:
 
 header_f:
 | EMPTYLINE+ hf=block_list { hf }
-| hf=header | hf=code_block | hf=source_block | hf=eof | hf=table | hf=ext
+| hf=header | hf=code_block | hf=source_block | hf=math_block | hf=eof
+| hf=table | hf=ext | hf=list_t
   { hf }
 
 table:

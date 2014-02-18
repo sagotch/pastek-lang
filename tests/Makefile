@@ -5,7 +5,7 @@ COV_FILES=parser.ml lexer.ml
 SRC_FILES=type.ml $(COV_FILES)
 INC=-I ../src/
 
-TEST_FILES=parser_basic
+TEST_FILES=parser_basic parser_advanced
 
 %.test: %.cmo
 	$(CAMLC) -linkpkg -o $@ $(SRC_FILES:.ml=.cmo) $<
@@ -19,7 +19,7 @@ $(COV_FILES:.ml=.cmo):
 %.cmo:
 	make -C ../src $@
 
-parser_basic.cmo: $(SRC_FILES:.ml=.cmo)
+parser_basic.cmo parser_advanced.cmo: $(SRC_FILES:.ml=.cmo)
 
 # CODE COVERAGE
 
