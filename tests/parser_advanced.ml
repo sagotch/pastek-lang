@@ -2,6 +2,9 @@ open OUnit
 open Type
 open Lexer
 
+(* The purpose of this file is to assert that two following blocks
+ * are parsed as expected according to separating carriage returns *)
+
 let assert_equal = assert_equal ~printer:string_of_document
 let parse str =
   let lexbuf = Lexing.from_string str in
@@ -13,42 +16,55 @@ let any_sep = "" :: eol
 
 let check expected str expected' str' separators =
   List.iter
-    (fun d -> assert_equal (expected :: expected') (parse (str ^ d ^ str')))
+    (fun d -> assert_equal (expected @ expected') (parse (str ^ d ^ str')))
     separators
 
 let title_followers _ =
 
-  let check =
-    check (Title(1,[Plain "Lorem"])) "= Lorem =" in
+  let title = "= Lorem =" in
+
+  let check str =
+    check (parse title) title (parse str) str in
 
   (* eof *)
-  check [] "" any_sep;
+  check "" any_sep;
 
   (* title *)
-  check [Title(2,[Plain"Ipsum"])] " ==   Ipsum" eol;
+  check " ==   Ipsum" eol;
+  assert_equal [Title(1,[Plain"Lorem == Ipsum"])]
+               (parse("=Lorem == Ipsum"));
 
   (* list *)
-  check [List(false,[Item([Plain "Ipsum"],None)])] "-Ipsum" eol;
-  check [List(true,[Item([Plain "Ipsum"],None)])] "#Ipsum" eol;
+  check "-Ipsum" eol;
+  check "#Ipsum" eol;
+  assert_equal [Title(1,[Plain"Lorem -Ipsum"])]
+               (parse("=Lorem -Ipsum"));
+  assert_equal [Title(1,[Plain"Lorem -Ipsum"])]
+               (parse("=Lorem -Ipsum"));
 
   (* code block *)
-  check [CodeBlock "Ipsum"] "```Ipsum```" any_sep;
+  check "```Ipsum```" any_sep;
 
   (* source block *)
-  check [SourceBlock "Ipsum"] "{{{Ipsum}}}" any_sep;
+  check "{{{Ipsum}}}" any_sep;
 
   (* table *)
-  check [Table(None, [[[Plain"Ipsum"]]])] "|Ipsum|" eol;
+  check "|Ipsum|" eol;
+  (* '|' is not allowed as a character *)
 
   (* math block *)
-  check [MathBlock[Plain"Ipsum"]] "$$$Ipsum$$$" any_sep;
+  check "$$$Ipsum$$$" any_sep;
   
   (* paragraph*)
-  check [Paragraph[Plain"Ipsum"]] "Ipsum" emptyline;
+  check "Ipsum" emptyline;
+  assert_equal [Title(1,[Plain"Lorem Ipsum"])]
+               (parse("=Lorem Ipsum"));
+  assert_equal [Title(1,[Plain"Lorem";Plain"Ipsum"])]
+               (parse("=Lorem\nIpsum"));
 
   (* ext *)
-  check [ExternRender("Lorem", "Ipsum")] "%%%Lorem\nIpsum%%%" any_sep;
-  check [ExternRender("Lorem", " Ipsum")] "%%%Lorem Ipsum%%%" any_sep
+  check "%%%Lorem\nIpsum%%%" any_sep;
+  check "%%%Lorem Ipsum%%%" any_sep
 
 let suite = 
   "Suite" >:::
