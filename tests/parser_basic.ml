@@ -9,6 +9,9 @@ let parse str =
 
 let title _ =
   assert_equal
+    [Title(3, [Plain "Lorem === "; Plain "Ipsum"])]
+    (parse "=== Lorem === \n    Ipsum");
+  assert_equal
     [Title(3, [Plain "Lorem"])]
     (parse "=== Lorem === ");
   assert_equal
@@ -46,9 +49,47 @@ let emphasis _ =
     [Title (3, [Bold [Italic [Plain "Lo"; Strike [Plain "rem"]];
                       Plain " ipsum."]])]
     (parse "  ===  **//Lo~~rem~~// ipsum.**");
-  assert_raises
-    Parser.Error
-    (fun () -> (parse  "  ===  **//Lorem** ipsum.//"))
+
+  assert_equal
+    [Paragraph [
+         Bold[Italic[Plain "Lo";Bold[Plain "rem"]];Plain" ipsum."];
+         Bold[Underline[Plain "Lo";Bold[Plain "rem"]];Plain" ipsum."];
+         Bold[Strike[Plain "Lo";Bold[Plain "rem"]];Plain" ipsum."]]]
+    (parse "**//Lo**rem**// ipsum.**
+            **__Lo**rem**__ ipsum.**
+            **~~Lo**rem**~~ ipsum.**");
+
+  assert_equal
+    [Paragraph [
+         Italic[Bold[Plain"Lo";Italic[Plain "rem"]];Plain " ipsum."];
+         Italic[Underline[Plain"Lo";Italic[Plain"rem"]];Plain" ipsum."];
+         Italic[Strike[Plain"Lo";Italic[Plain "rem"]];Plain" ipsum."]]]
+    (parse "//**Lo//rem//** ipsum.//
+            //__Lo//rem//__ ipsum.//
+            //~~Lo//rem//~~ ipsum.//");
+
+  assert_equal
+    [Paragraph [
+         Underline[Bold[Plain"Lo";Underline[Plain "rem"]];Plain " ipsum."];
+         Underline[Italic[Plain"Lo";Underline[Plain"rem"]];Plain" ipsum."];
+         Underline[Strike[Plain"Lo";Underline[Plain"rem"]];Plain" ipsum."]]]
+    (parse "__**Lo__rem__** ipsum.__
+            __//Lo__rem__// ipsum.__
+            __~~Lo__rem__~~ ipsum.__");
+
+  assert_equal
+    [Paragraph [
+         Strike[Bold[Plain"Lo";Strike[Plain "rem"]];Plain " ipsum."];
+         Strike[Italic[Plain"Lo";Strike[Plain"rem"]];Plain" ipsum."];
+         Strike[Underline[Plain"Lo";Strike[Plain"rem"]];Plain" ipsum."]]]
+    (parse "~~**Lo~~rem~~** ipsum.~~
+            ~~//Lo~~rem~~// ipsum.~~
+            ~~__Lo~~rem~~__ ipsum.~~");
+
+  assert_raises Parser.Error (fun () -> (parse "**//Lorem** ipsum.//"));
+  assert_raises Parser.Error (fun () -> (parse "//**Lorem// ipsum.**"));
+  assert_raises Parser.Error (fun () -> (parse "~~//Lorem~~ ipsum.//"));
+  assert_raises Parser.Error (fun () -> (parse "__//Lorem__ ipsum.//"))
 
 let sup_sub _ =
   assert_equal
@@ -66,7 +107,9 @@ let sup_sub _ =
     (parse "Lorem^{2} ipsum.");
   assert_equal
     [Paragraph [Plain "Lorem"; Sub [Plain "i"]; Plain " ipsum."]]
-    (parse "Lorem_i ipsum.")
+    (parse "Lorem_i ipsum.");
+  assert_raises (Failure"lexing: empty token")(fun()->(parse "Lorem_{ipsum"));
+  assert_raises (Failure"lexing: empty token")(fun()->(parse "Lorem^{ipsum"))
 
 let inline_code _ =
   assert_equal
@@ -90,10 +133,7 @@ let inline_source _ =
     (parse "{{<b>Lorem <i>ipsum</i>.</b>}}");
   assert_equal
     [Paragraph [InlineSource "<b>Lorem <i>ipsum</i>.</b>}}"]]
-    (parse "{{<b>Lorem <i>ipsum</i>.</b>}}}}");
-  assert_equal
-    [Paragraph [InlineSource "<b>Lorem <i>ipsum</i>.</b>"]]
-    (parse "{{<b>Lorem <i>\nipsum</i>.</b>}}")
+    (parse "{{<b>Lorem <i>ipsum</i>.</b>}}}}")
 
 let source_block _ =
   assert_equal
@@ -132,6 +172,12 @@ let list_t _ =
                               Item([Plain"dolor --sit"], None)]));
                   Item([Plain"amet"], None)])]
     (parse "- Lorem\n--ipsum\n--dolor --sit\n-amet");
+  assert_equal
+    [List(true, [Item([Plain"Lorem"],
+                       Some (false,
+                             [Item([Plain"ipsum"], None)]));
+                  Item([Plain"dolor"], None)])]
+    (parse "# Lorem\n--ipsum\n#dolor");
   assert_equal
     [List(false, [Item([Plain"Lorem"],
                        Some (true,
@@ -218,8 +264,8 @@ let link _ =
     [Paragraph[Link("foo", [Bold[Plain "bar"]; Plain " bu"])]]
     (parse "[[ foo << **bar** bu ]]");
   assert_equal
-    [Paragraph[Link("foo<<bar]]", [])]]
-    (parse "[[ foo\\<<bar\\]\\]]]");
+    [Paragraph[Link("foo<<||bar]]", [])]]
+    (parse "[[ foo\\<<\\||bar\\]\\]]]");
   assert_equal
     [Paragraph[Link("foo", [Plain "bar "; Plain "bu"])]]
     (parse "[[ foo << bar \n           bu]]");
