@@ -6,6 +6,7 @@ open Lexer
  * are parsed as expected according to separating carriage returns *)
 
 let assert_equal = assert_equal ~printer:string_of_document
+
 let parse str =
   let lexbuf = Lexing.from_string str in
   snd @@ Lexer.parse lexbuf
@@ -14,152 +15,153 @@ let emptyline = ["\n\n"]
 let eol = "\n" :: emptyline
 let any_sep = "" :: eol
 
-let check expected str expected' str' separators =
+let title = "= Lorem ="
+let eof = ""
+let ulist = "-Lorem"
+let olist = "#Lorem"
+let code_block = "```Lorem```"
+let source_block = "{{{Lorem}}}"
+let table = "|Lorem|"
+let math_block = "$$$Lorem$$$"
+let paragraph = "Ispum"
+let ext1 = "%%%Lorem\nLorem%%%"
+let ext2 = "%%%Lorem Lorem%%%"
+
+
+let assert_two_blocks str str' separators =
   List.iter
-    (fun d -> assert_equal (expected @ expected') (parse (str ^ d ^ str')))
+    (fun d -> assert_equal (parse str @ parse str') (parse (str ^ d ^ str')))
     separators
 
 let title_followers _ =
 
-  let title = "= Lorem =" in
-
-  let check str =
-    check (parse title) title (parse str) str in
+  let assert_two_blocks = assert_two_blocks title in
 
   (* eof *)
-  check "" any_sep;
+  assert_two_blocks eof any_sep;
 
   (* title *)
-  check " ==   Ipsum" eol;
-  assert_equal [Title(1,[Plain"Lorem == Ipsum"])]
-               (parse("=Lorem == Ipsum"));
+  assert_two_blocks title eol;
+  assert_equal [Title(1,[Plain"Lorem == Lorem"])] (parse("=Lorem == Lorem"));
 
   (* list *)
-  check "-Ipsum" eol;
-  check "#Ipsum" eol;
-  assert_equal [Title(1,[Plain"Lorem -Ipsum"])]
-               (parse("=Lorem -Ipsum"));
-  assert_equal [Title(1,[Plain"Lorem -Ipsum"])]
-               (parse("=Lorem -Ipsum"));
+  assert_two_blocks ulist eol;
+  assert_two_blocks olist eol;
+  assert_equal [Title(1,[Plain"Lorem -Lorem"])] (parse("=Lorem -Lorem"));
+  assert_equal [Title(1,[Plain"Lorem -Lorem"])] (parse("=Lorem -Lorem"));
 
   (* code block *)
-  check "```Ipsum```" any_sep;
+  assert_two_blocks code_block any_sep;
 
   (* source block *)
-  check "{{{Ipsum}}}" any_sep;
+  assert_two_blocks source_block any_sep;
 
   (* table *)
-  check "|Ipsum|" eol;
-  (* '|' is not allowed as a character *)
+  assert_two_blocks table eol;
 
   (* math block *)
-  check "$$$Ipsum$$$" any_sep;
+  assert_two_blocks math_block any_sep;
   
   (* paragraph*)
-  check "Ipsum" emptyline;
-  assert_equal [Title(1,[Plain"Lorem Ipsum"])]
-               (parse("=Lorem Ipsum"));
-  assert_equal [Title(1,[Plain"Lorem";Plain"Ipsum"])]
-               (parse("=Lorem\nIpsum"));
+  assert_two_blocks paragraph emptyline;
+  assert_equal [Title(1,[Plain"Lorem Lorem"])] (parse("=Lorem Lorem"));
+  assert_equal [Title(1,[Plain"Lorem";Plain"Lorem"])] (parse("=Lorem\nLorem"));
 
   (* ext *)
-  check "%%%Lorem\nIpsum%%%" any_sep;
-  check "%%%Lorem Ipsum%%%" any_sep
+  assert_two_blocks ext1 any_sep;
+  assert_two_blocks ext2 any_sep
 
 let list_followers _ =
 
-  let list = "- Lorem" in
+  let common_assert assert_two_blocks =
 
-  let check str =
-    check (parse list) list (parse str) str in
+    (* eof *)
+    assert_two_blocks eof any_sep;
 
-  (* eof *)
-  check "" any_sep;
+    (* title *)
+    assert_two_blocks title eol;
 
-  (* title *)
-  check "=Ipsum" eol;
-  assert_equal [List(false,[Item([Plain"Lorem =Ipsum"],None)])]
-               (parse("-Lorem =Ipsum"));
+    (* list *)
+    assert_two_blocks ulist emptyline;
+    assert_two_blocks olist emptyline;
 
-  (* list *)
-  check "--Ipsum" emptyline;
+    (* code block *)
+    assert_two_blocks code_block any_sep;
+
+    (* source block *)
+    assert_two_blocks source_block any_sep;
+
+    (* table *)
+    assert_two_blocks table eol;
+
+    (* math block *)
+    assert_two_blocks math_block any_sep;
+    
+    (* paragraph*)
+    assert_two_blocks paragraph emptyline;
+
+    (* ext *)
+    assert_two_blocks ext1 any_sep;
+    assert_two_blocks ext2 any_sep
+
+  in
+
+  (* Unordered list *)
+  common_assert (assert_two_blocks ulist);
+  assert_equal [List(false,[Item([Plain"Lorem =Lorem"],None)])]
+               (parse("-Lorem =Lorem"));
   assert_equal [List(false,[Item([Plain"Lorem"],
-                                 Some(false,[Item([Plain"Ipsum"],None)]))])]
-               (parse("-Lorem\n--Ipsum"));
-  assert_equal [List(false,[Item([Plain"Lorem --Ipsum"],None)])]
-               (parse("-Lorem --Ipsum"));
+                                 Some(false,[Item([Plain"Lorem"],None)]))])]
+               (parse("-Lorem\n--Lorem"));
+  assert_equal [List(false,[Item([Plain"Lorem --Lorem"],None)])]
+               (parse("-Lorem --Lorem"));
 
-  (* code block *)
-  check "```Ipsum```" any_sep;
+  assert_equal [List(false,[Item([Plain"Lorem Lorem"],None)])]
+               (parse("-Lorem Lorem"));
+  assert_equal [List(false,[Item([Plain"Lorem";Plain"Lorem"],None)])]
+               (parse("-Lorem\nLorem"));
 
-  (* source block *)
-  check "{{{Ipsum}}}" any_sep;
-
-  (* table *)
-  check "|Ipsum|" eol;
-  (* '|' is not allowed as a character *)
-
-  (* math block *)
-  check "$$$Ipsum$$$" any_sep;
-  
-  (* paragraph*)
-  check "Ipsum" emptyline;
-  assert_equal [List(false,[Item([Plain"Lorem Ipsum"],None)])]
-               (parse("-Lorem Ipsum"));
-  assert_equal [List(false,[Item([Plain"Lorem";Plain"Ipsum"],None)])]
-               (parse("-Lorem\nIpsum"));
-
-  (* ext *)
-  check "%%%Lorem\nIpsum%%%" any_sep;
-  check "%%%Lorem Ipsum%%%" any_sep
-
+  (* Ordered list *)
+  common_assert (assert_two_blocks olist)
 
 let paragraph_followers _ =
 
-  let paragraph = "Lorem" in
-
-  let check str =
-    check (parse paragraph) paragraph (parse str) str in
+  let assert_two_blocks = assert_two_blocks paragraph in
 
   (* eof *)
-  check "" any_sep;
+  assert_two_blocks eof any_sep;
 
   (* title *)
-  check " ==   Ipsum" eol;
-  assert_equal [Paragraph[Plain"Lorem == Ipsum"]]
-               (parse("Lorem == Ipsum"));
+  assert_two_blocks title eol;
+  assert_equal [Paragraph[Plain"Lorem == Lorem"]]
+               (parse("Lorem == Lorem"));
 
   (* list *)
-  check "-Ipsum" eol;
-  check "#Ipsum" eol;
-  assert_equal [Paragraph[Plain"Lorem -Ipsum"]]
-               (parse("Lorem -Ipsum"));
-  assert_equal [Paragraph[Plain"Lorem -Ipsum"]]
-               (parse("Lorem -Ipsum"));
+  assert_two_blocks ulist eol;
+  assert_two_blocks olist eol;
+  assert_equal [Paragraph[Plain"Lorem -Lorem"]] (parse("Lorem -Lorem"));
+  assert_equal [Paragraph[Plain"Lorem -Lorem"]] (parse("Lorem -Lorem"));
 
   (* code block *)
-  check "```Ipsum```" any_sep;
+  assert_two_blocks code_block any_sep;
 
   (* source block *)
-  check "{{{Ipsum}}}" any_sep;
+  assert_two_blocks source_block any_sep;
 
   (* table *)
-  check "|Ipsum|" eol;
-  (* '|' is not allowed as a character *)
+  assert_two_blocks table eol;
 
   (* math block *)
-  check "$$$Ipsum$$$" any_sep;
+  assert_two_blocks math_block any_sep;
   
   (* paragraph*)
-  check "Ipsum" emptyline;
-  assert_equal [Paragraph[Plain"Lorem Ipsum"]]
-               (parse("Lorem Ipsum"));
-  assert_equal [Paragraph[Plain"Lorem";Plain"Ipsum"]]
-               (parse("Lorem\nIpsum"));
+  assert_two_blocks paragraph emptyline;
+  assert_equal [Paragraph[Plain"Lorem Lorem"]] (parse("Lorem Lorem"));
+  assert_equal [Paragraph[Plain"Lorem";Plain"Lorem"]] (parse("Lorem\nLorem"));
 
   (* ext *)
-  check "%%%Lorem\nIpsum%%%" any_sep;
-  check "%%%Lorem Ipsum%%%" any_sep
+  assert_two_blocks ext1 any_sep;
+  assert_two_blocks ext2 any_sep
 
 let suite = 
   "Suite" >:::
