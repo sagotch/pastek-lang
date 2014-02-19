@@ -41,7 +41,7 @@ and string_of_block = function
   | Paragraph p -> "Paragraph(" ^ string_of_inlines p ^ ")"
   | CodeBlock txt -> "CodeBlock \"" ^ txt ^ "\""
   | SourceBlock txt -> "SourceBlock \"" ^ txt ^ "\""
-  | MathBlock l -> "CodeBlock \"" ^ string_of_inlines l ^ "\""
+  | MathBlock l -> "MathBlock \"" ^ string_of_inlines l ^ "\""
   | Table (head, cont) -> "Table(" ^ string_of_table (head, cont) ^ ")"
   | List l -> string_of_list l
   | ExternRender (cmd, src) -> "ExternRender(" ^ cmd ^ ", " ^ src ^ ")"
