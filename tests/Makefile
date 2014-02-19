@@ -5,7 +5,7 @@ COV_FILES=parser.ml lexer.ml
 SRC_FILES=type.ml $(COV_FILES)
 INC=-I ../src/
 
-TEST_FILES=parser_basic parser_advanced
+TEST_FILES=parser_basic parser_block_suit
 
 %.test: %.cmo
 	$(CAMLC) -linkpkg -o $@ $(SRC_FILES:.ml=.cmo) $<
