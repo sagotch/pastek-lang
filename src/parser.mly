@@ -63,7 +63,9 @@ header:
     | Plain s ->
        (try let i =
               search_forward (regexp (" *" ^ String.make $1 '=' ^ " *$")) s 0 
-            in Title ($1, List.rev (Plain (String.sub s 0 i) :: q)) :: $3
+            in if i = 0
+               then Title ($1, List.rev q) :: $3
+               else Title ($1, List.rev (Plain (String.sub s 0 i) :: q)) :: $3
         with Not_found -> Title ($1, $2) :: $3)
     | _ -> Title ($1, $2) :: $3 }
 
