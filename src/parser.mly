@@ -54,7 +54,7 @@ eof:
 
 (* NB: with this configuration, headers have to be separated from
  * paragraphs with an empty line.
- * NB: This implentation add the Str library dependancy *)
+ * NB: This implentation add the Str library dependency *)
 header:
 | TITLE inline(regular)+ header_f
   { let l = List.rev $2 in
