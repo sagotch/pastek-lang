@@ -18,6 +18,8 @@
 
   let ( >> ) c buff = Buffer.add_char buff c; buff
 
+  let return = List.rev
+
 }
 
 let escapable = ['-' '#' '|' '=' '`' '{' '$' '*' '/' '_' '~' '^' '\\' '[' '&']
@@ -29,23 +31,25 @@ let num = ['0' - '9']
 let alphanum = alpha | num
 
 rule line_beginning acc = parse
-| eof                                                          { List.rev acc }
+| eof                                                            { return acc }
 | ' '                                             { line_beginning acc lexbuf }
 | ('-'+ as l) ' '* { line (acc << UITEM (String.length l)) (create 42) lexbuf }
 | ('#'+ as l) ' '* { line (acc << OITEM (String.length l)) (create 42) lexbuf }
 | ('='+ as l) ' '* { line (acc << TITLE (String.length l)) (create 42) lexbuf }
 | '|' ' '*                       { line (acc << TBL_START) (create 42) lexbuf }
 | '+' ['+' '-']* "+\n"              { line_beginning (acc << TBL_HSEP) lexbuf }
-| '+' ['+' '-']* '+' eof                        { List.rev @@ acc << TBL_HSEP }
-| '\n'                            { line_beginning ( acc << EMPTYLINE) lexbuf }
+| '+' ['+' '-']* '+' eof                           { return (acc << TBL_HSEP) }
+| '\n'                             { line_beginning (acc << EMPTYLINE) lexbuf }
+| "```" '\n'?                             { code_block acc (create 42) lexbuf }
+| "{{{" '\n'?                           { source_block acc (create 42) lexbuf }
+| "$$$" '\n'?                   { line (acc << MATH_BLOCK) (create 42) lexbuf }
+| "%%%" ([^' ' '\n']+ as cmd) [' ' '\n']?
+                                      { ext_render cmd acc (create 42) lexbuf }
 | ""                                            { line acc (create 42) lexbuf }
 
 and line acc buffer = parse
-| "```" '\n'?                { code_block (acc <<< buffer) (create 42) lexbuf }
-| "{{{" '\n'?              { source_block (acc <<< buffer) (create 42) lexbuf }
-| "$$$" '\n'?        { line (acc <<< buffer << MATH_BLOCK) (create 42) lexbuf }
-| "%%%" ([^' ' '\n']+ as cmd) '\n'?
-                         { ext_render cmd (acc <<< buffer) (create 42) lexbuf }
+| "$$$" '\n'           { line_beginning (acc <<< buffer << MATH_BLOCK) lexbuf }
+| "$$$" eof                           { return (acc <<< buffer << MATH_BLOCK) }
 | "**"                     { line (acc <<< buffer << BOLD) (create 42) lexbuf }
 | "//"                   { line (acc <<< buffer << ITALIC) (create 42) lexbuf }
 | "__"                { line (acc <<< buffer << UNDERLINE) (create 42) lexbuf }
@@ -59,7 +63,7 @@ and line acc buffer = parse
 | '^' (_ as c)            { line (acc <<< buffer << SUP c) (create 42) lexbuf }
 | '_' (_ as c)            { line (acc <<< buffer << SUB c) (create 42) lexbuf }
 | ' '* '|' ' '* '\n'      { line_beginning (acc <<< buffer << TBL_END) lexbuf }
-| ' '* '|' ' '* eof                    { List.rev (acc <<< buffer << TBL_END) }
+| ' '* '|' ' '* eof                      { return (acc <<< buffer << TBL_END) }
 | ' '* '|' ' '*         { line (acc <<< buffer << TBL_SEP) (create 42) lexbuf }
 | '\n'                               { line_beginning (acc <<< buffer) lexbuf }
 | '\\' (escapable as c)           { add_char buffer c; line acc buffer lexbuf }
@@ -68,22 +72,18 @@ and line acc buffer = parse
 | '&' (alpha as c)
                  { line (acc <<< buffer << GREEK_LETTER c) (create 42) lexbuf }
 | _ as c                                      { line acc (c >> buffer) lexbuf }
-| eof                                          { List.rev @@ (acc <<< buffer) }
+| eof                                               { return (acc <<< buffer) }
 
 and ext_render cmd acc buffer = parse
 | "\\%"                           { ext_render cmd acc ('%' >> buffer) lexbuf }
-| '\n'? "%%%"     { line_beginning (acc << EXT (cmd, contents buffer)) lexbuf }
+| '\n'? "%%%" '\n'{ line_beginning (acc << EXT (cmd, contents buffer)) lexbuf }
+| '\n'? "%%%" eof                { return (acc << EXT (cmd, contents buffer)) }
 | _ as c                            { ext_render cmd acc (c >> buffer) lexbuf }
 
 and inline_code acc buffer = parse
 | "``"       { line (acc << INLINE_CODE (contents buffer)) (create 42) lexbuf }
 | '\n'                                        { inline_code acc buffer lexbuf }
 | _ as c                               { inline_code acc (c >> buffer) lexbuf }
-
-and code_block acc buffer = parse
-| '\n'? "```" '\n'?
-                { line_beginning (acc << CODE_BLOCK (contents buffer)) lexbuf }
-| _ as c                                { code_block acc (c >> buffer) lexbuf }
 
 and inline_source acc buffer = parse
 | "}}" ('}'* as s)            { add_string buffer s;
@@ -92,10 +92,19 @@ and inline_source acc buffer = parse
 | '\n'                                      { inline_source acc buffer lexbuf }
 | _ as c                             { inline_source acc (c >> buffer) lexbuf }
 
+and code_block acc buffer = parse
+| '\n'? "```" '\n'
+                { line_beginning (acc << CODE_BLOCK (contents buffer)) lexbuf }
+| '\n'? "```" eof              { return (acc << CODE_BLOCK (contents buffer)) }
+| _ as c                                { code_block acc (c >> buffer) lexbuf }
+
 and source_block acc buffer = parse
-| '\n'? "}}}" ('}'* as s) '\n'?
+| '\n'? "}}}" ('}'* as s) '\n'
               { add_string buffer s;
                 line_beginning (SOURCE_BLOCK (contents buffer) :: acc) lexbuf }
+| '\n'? "}}}" ('}'* as s) eof
+              { add_string buffer s;
+                return (SOURCE_BLOCK (contents buffer) :: acc) }
 | _ as c                  { add_char buffer c; source_block acc buffer lexbuf }
 
 and sup_sub opened closing acc buffer = parse

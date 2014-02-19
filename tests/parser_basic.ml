@@ -321,12 +321,12 @@ let greek_letter _ =
 
 let extern _ =
   assert_equal
-    [ExternRender("dot", " graph g{\na -- b -- c;\nb -- d;\n}")]
+    [ExternRender("dot", "graph g{\na -- b -- c;\nb -- d;\n}")]
     (parse "%%%dot graph g{\na -- b -- c;\nb -- d;\n}%%%");
   assert_equal
-    [ExternRender("dot", " graph g{\na -- b -- c;\nb -- d;\n}")]
-    (parse "%%%dot\n graph g{\na -- b -- c;\nb -- d;\n}\n%%%");  assert_equal
-    [ExternRender("foo", " %%% %"); Paragraph [Plain "%%"]]
+    [ExternRender("dot", "graph g{\na -- b -- c;\nb -- d;\n}")]
+    (parse "%%%dot\ngraph g{\na -- b -- c;\nb -- d;\n}\n%%%");  assert_equal
+    [ExternRender("foo", "%%% %%%")]
     (parse "%%%foo \\%%% \\%%%%%%");
   assert_equal
     [Paragraph [Plain "%%% dot"]]
