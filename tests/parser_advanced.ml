@@ -5,12 +5,6 @@ open Lexer
 (* The purpose of this file is to assert that two following blocks
  * are parsed as expected according to separating carriage returns *)
 
-let assert_equal = assert_equal ~printer:string_of_document
-
-let parse str =
-  let lexbuf = Lexing.from_string str in
-  snd @@ Lexer.parse lexbuf
-
 let emptyline = ["\n\n"]
 let eol = "\n" :: emptyline
 let any_sep = "" :: eol
@@ -27,147 +21,166 @@ let paragraph = "Ispum"
 let ext1 = "%%%Lorem\nLorem%%%"
 let ext2 = "%%%Lorem Lorem%%%"
 
+let parse str =
+  let lexbuf = Lexing.from_string str in
+  snd @@ Lexer.parse lexbuf
 
-let assert_two_blocks str str' separators =
+let assert_not_equal str str' separators =
+  List.iter
+    begin
+      fun d ->
+      try
+        let p1 = parse str @ parse str'
+        and p2 = parse (str ^ d ^ str') in
+        assert_bool
+          (str ^ d ^ str' ^ ": equals " ^ string_of_document p1)
+          (p1 <> p2)
+      with Failure _ | Parser.Error-> assert_bool "" true
+    end
+    separators
+
+let assert_equal str str' separators =  
+  let assert_equal = assert_equal ~printer:string_of_document in
   List.iter
     (fun d -> assert_equal (parse str @ parse str') (parse (str ^ d ^ str')))
     separators
 
+let delim_not_in l =
+  List.filter (fun x -> not (List.mem x l)) any_sep
+
+module type Test_battery = sig
+
+    val testing : string
+
+    val eof : string list
+    val title : string list
+    val ulist : string list
+    val olist : string list
+    val code_block : string list
+    val source_block : string list
+    val table : string list
+    val math_block : string list
+    val paragraph : string list
+    val ext1 : string list
+    val ext2 : string list
+
+end
+
+module Test = functor (B : Test_battery) ->
+  struct
+    let run_tests =
+      let assert_equal = assert_equal B.testing 
+      and assert_not_equal = assert_not_equal B.testing 
+      in
+      let test t d =
+        assert_equal t d;
+        assert_not_equal t (delim_not_in d) in
+      test eof B.eof;
+      test title B.title;
+      test ulist B.ulist;
+      test olist B.olist;
+      test code_block B.code_block;
+      test source_block B.source_block;
+      test table B.table;
+      test math_block B.math_block;
+      test paragraph B.paragraph;
+      test ext1 B.ext1;
+      test ext2 B.ext2
+  end
+
 let title_followers _ =
-
-  let assert_two_blocks = assert_two_blocks title in
-
-  (* eof *)
-  assert_two_blocks eof any_sep;
-
-  (* title *)
-  assert_two_blocks title eol;
-  assert_equal [Title(1,[Plain"Lorem == Lorem"])] (parse("=Lorem == Lorem"));
-
-  (* list *)
-  assert_two_blocks ulist eol;
-  assert_two_blocks olist eol;
-  assert_equal [Title(1,[Plain"Lorem -Lorem"])] (parse("=Lorem -Lorem"));
-  assert_equal [Title(1,[Plain"Lorem -Lorem"])] (parse("=Lorem -Lorem"));
-
-  (* code block *)
-  assert_two_blocks code_block any_sep;
-
-  (* source block *)
-  assert_two_blocks source_block any_sep;
-
-  (* table *)
-  assert_two_blocks table eol;
-
-  (* math block *)
-  assert_two_blocks math_block any_sep;
-  
-  (* paragraph*)
-  assert_two_blocks paragraph emptyline;
-  assert_equal [Title(1,[Plain"Lorem Lorem"])] (parse("=Lorem Lorem"));
-  assert_equal [Title(1,[Plain"Lorem";Plain"Lorem"])] (parse("=Lorem\nLorem"));
-
-  (* ext *)
-  assert_two_blocks ext1 any_sep;
-  assert_two_blocks ext2 any_sep
+  let module T =
+    Test (struct
+           let testing = title
+                       
+           let eof = any_sep
+           let title = eol
+           let ulist = eol
+           let olist = eol
+           let code_block = eol
+           let source_block = eol
+           let table = eol
+           let math_block = eol
+           let paragraph = emptyline
+           let ext1 = eol
+           let ext2 = eol
+         end)
+  in T.run_tests
 
 let list_followers _ =
-
-  let common_assert assert_two_blocks =
-
-    (* eof *)
-    assert_two_blocks eof any_sep;
-
-    (* title *)
-    assert_two_blocks title eol;
-
-    (* list *)
-    assert_two_blocks ulist emptyline;
-    assert_two_blocks olist emptyline;
-
-    (* code block *)
-    assert_two_blocks code_block any_sep;
-
-    (* source block *)
-    assert_two_blocks source_block any_sep;
-
-    (* table *)
-    assert_two_blocks table eol;
-
-    (* math block *)
-    assert_two_blocks math_block any_sep;
-    
-    (* paragraph*)
-    assert_two_blocks paragraph emptyline;
-
-    (* ext *)
-    assert_two_blocks ext1 any_sep;
-    assert_two_blocks ext2 any_sep
-
+  let mk_tests testing = 
+    let module T = Test(struct
+                         let testing = testing
+                                         
+                         let eof = any_sep
+                         let title = eol
+                         let ulist = emptyline
+                         let olist = emptyline
+                         let code_block = eol
+                         let source_block = eol
+                         let table = eol
+                         let math_block = eol
+                         let paragraph = emptyline
+                         let ext1 = eol
+                         let ext2 = eol
+                       end)
+    in T.run_tests
   in
-
-  (* Unordered list *)
-  common_assert (assert_two_blocks ulist);
-  assert_equal [List(false,[Item([Plain"Lorem =Lorem"],None)])]
-               (parse("-Lorem =Lorem"));
-  assert_equal [List(false,[Item([Plain"Lorem"],
-                                 Some(false,[Item([Plain"Lorem"],None)]))])]
-               (parse("-Lorem\n--Lorem"));
-  assert_equal [List(false,[Item([Plain"Lorem --Lorem"],None)])]
-               (parse("-Lorem --Lorem"));
-
-  assert_equal [List(false,[Item([Plain"Lorem Lorem"],None)])]
-               (parse("-Lorem Lorem"));
-  assert_equal [List(false,[Item([Plain"Lorem";Plain"Lorem"],None)])]
-               (parse("-Lorem\nLorem"));
-
-  (* Ordered list *)
-  common_assert (assert_two_blocks olist)
+  mk_tests ulist;
+  mk_tests olist
 
 let paragraph_followers _ =
 
-  let assert_two_blocks = assert_two_blocks paragraph in
+  let module T =
+    Test (struct
+           let testing = paragraph
+                       
+           let eof = any_sep
+           let title = eol
+           let ulist = eol
+           let olist = eol
+           let code_block = eol
+           let source_block = eol
+           let table = eol
+           let math_block = eol
+           let paragraph = emptyline
+           let ext1 = eol
+           let ext2 = eol
+         end)
+  in T.run_tests
 
-  (* eof *)
-  assert_two_blocks eof any_sep;
+let delimited_blocks _ =
 
-  (* title *)
-  assert_two_blocks title eol;
-  assert_equal [Paragraph[Plain"Lorem == Lorem"]]
-               (parse("Lorem == Lorem"));
-
-  (* list *)
-  assert_two_blocks ulist eol;
-  assert_two_blocks olist eol;
-  assert_equal [Paragraph[Plain"Lorem -Lorem"]] (parse("Lorem -Lorem"));
-  assert_equal [Paragraph[Plain"Lorem -Lorem"]] (parse("Lorem -Lorem"));
-
-  (* code block *)
-  assert_two_blocks code_block any_sep;
-
-  (* source block *)
-  assert_two_blocks source_block any_sep;
-
-  (* table *)
-  assert_two_blocks table eol;
-
-  (* math block *)
-  assert_two_blocks math_block any_sep;
-  
-  (* paragraph*)
-  assert_two_blocks paragraph emptyline;
-  assert_equal [Paragraph[Plain"Lorem Lorem"]] (parse("Lorem Lorem"));
-  assert_equal [Paragraph[Plain"Lorem";Plain"Lorem"]] (parse("Lorem\nLorem"));
-
-  (* ext *)
-  assert_two_blocks ext1 any_sep;
-  assert_two_blocks ext2 any_sep
+  let mk_tests testing = 
+    let module T = Test(struct
+                         let testing = testing
+                                         
+                         let eof = any_sep
+                         let title = eol
+                         let ulist = eol
+                         let olist = eol
+                         let code_block = eol
+                         let source_block = eol
+                         let table = eol
+                         let math_block = eol
+                         let paragraph = eol
+                         let ext1 = eol
+                         let ext2 = eol
+                       end)
+    in T.run_tests
+  in
+  mk_tests code_block;
+  mk_tests source_block;
+  mk_tests math_block;
+  mk_tests ext1;
+  mk_tests ext2
 
 let suite = 
   "Suite" >:::
     ["Title followers" >:: title_followers;
      "List followers" >:: list_followers;
-     "Paragraph followers" >:: paragraph_followers]
+     "Paragraph followers" >:: paragraph_followers;
+     "Delimited blocks" >:: delimited_blocks]
 
 let _ =
   run_test_tt_main suite
