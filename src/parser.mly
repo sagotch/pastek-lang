@@ -171,8 +171,8 @@ inline(param):
 | PLAIN { Plain $1 }
 | SUB { Sub [Plain (String.make 1 $1)] }
 | SUP { Sup [Plain (String.make 1 $1)] }
-| SUP_START inline(param)* SUP_END  { Sup $2 }
-| SUB_START inline(param)* SUB_END { Sub $2 }
+| SUP_START inline(regular)* SUP_END  { Sup $2 }
+| SUB_START inline(regular)* SUB_END { Sub $2 }
 | INLINE_SOURCE { InlineSource $1 }
 | IMAGE { Image (fst $1, snd $1) }
 | LINK inline(param)* LINK_END { Link ($1, $2) }
