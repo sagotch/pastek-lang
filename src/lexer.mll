@@ -67,6 +67,8 @@ and line acc buffer = parse
 | ' '* '|' ' '*         { line (acc <<< buffer << TBL_SEP) (create 42) lexbuf }
 | '\n'                               { line_beginning (acc <<< buffer) lexbuf }
 | '\\' (escapable as c)           { add_char buffer c; line acc buffer lexbuf }
+| '\\' (_ # escapable as c)
+                  { failwith ("Illegal backslash escape: " ^ String.make 1 c) }
 | '&' ('#' num+ | alpha alphanum+ as e) ';'
                  { line (acc <<< buffer << HTML_ENTITIE e) (create 42) lexbuf }
 | '&' (alpha as c)
