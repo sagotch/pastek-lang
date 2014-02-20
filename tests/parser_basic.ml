@@ -83,7 +83,12 @@ let emphasis _ =
   assert_raises Parser.Error (fun () -> parse "**//Lorem** ipsum.//");
   assert_raises Parser.Error (fun () -> parse "//**Lorem// ipsum.**");
   assert_raises Parser.Error (fun () -> parse "~~//Lorem~~ ipsum.//");
-  assert_raises Parser.Error (fun () -> parse "__//Lorem__ ipsum.//")
+  assert_raises Parser.Error (fun () -> parse "__//Lorem__ ipsum.//");
+
+  (* unterminated emphasis *)
+  List.iter
+    (fun emp -> assert_raises Parser.Error (fun () -> parse (emp^"lorem")))
+    ["**";"//";"~~";"__"]
 
 let sup_sub _ =
 
@@ -129,6 +134,26 @@ let sup_sub _ =
   assert_equal @@ mk_sub_brack_tests brack_expected;
   assert_equal @@ mk_sup_tests expected;
   assert_equal @@ mk_sub_tests expected;
+
+  (* curly brackets allow to nest emphasis with same mark *)
+  wrap_assert (fun x -> [Paragraph x])
+  @@ List.concat
+  @@ List.map
+       begin
+         fun emp -> let
+           mk_emp x = function
+           | "**" -> Bold x
+           | "//" -> Italic x
+           | "~~" -> Strike x
+           | "__" -> Underline x
+           | _ as s -> failwith ("not a emphasis mark: " ^ s)
+         in
+         [[mk_emp[Plain"L";Sup[mk_emp[Plain"i"]emp]]emp],
+          (emp^"L^{"^emp^"i"^emp^"}"^emp);
+          [mk_emp[Plain"L";Sub[mk_emp[Plain"i"]emp]]emp],
+          (emp^"L_{"^emp^"i"^emp^"}"^emp)]
+       end
+       ["**";"//";"~~";"__"];
 
   assert_raises (Failure"lexing: empty token")(fun()->parse"Lorem_{ipsum");
   assert_raises (Failure"lexing: empty token")(fun()->parse"Lorem^{ipsum")
@@ -179,11 +204,17 @@ let math _ =
       [MathBlock [Plain "Lorem"; Sub [Plain "i"]; Plain " ipsum."]],
       "$$$Lorem_i ipsum.$$$";
     ];
-  
-  assert_raises
-    (Failure "TODO: raise Parser.Error")
-    (fun () -> parse "$$Lorem **ipsum**$$")
-    
+
+  (* no emphasis allowed in math block *)
+  List.iter
+    (fun emp -> assert_raises (Failure "TODO: raise Parser.Error")
+                              (fun () -> parse ("$$Lor"^emp^"em"^emp^"$$")))
+    ["**";"//";"~~";"__"];
+
+  (* eof is not allowed in inline_math *)
+  assert_raises (Failure "TODO: raise Parser.Error")
+                (fun () -> parse "$$Lorem")
+
 let list_t _ =
   wrap_assert
     (fun (o, c) -> [List(o,c)])
@@ -244,9 +275,13 @@ let table _ =
       "|  |  |\n|  |  |";
     ];
   
-  assert_raises
-    Parser.Error
-    (fun () -> parse "| Cell 1.1 | Cell 1.2 |\n+---------+")
+  List.iter 
+    (fun i -> assert_raises Parser.Error (fun () -> parse i))
+    [
+      "| Cell 1.1 | Cell 1.2 |\n+---------+";
+      "| Cell 1.1 | Cell 1.2\n";
+      "| Cell 1.1 | Cell 1.2";
+    ]
 
 let escape _ =
   wrap_assert
@@ -264,12 +299,15 @@ let escape _ =
      "~~", "\\~~";
      "^", "\\^";
      "\\", "\\\\";
-     "\\not escapable", "\\not escapable";      
     ];
 
   assert_equal
     [[Paragraph [Plain "-"; Plain "#"; Plain "|"; Plain "=`{$**//__~~^\\"]],
-     "\\-\n\\#\n\\|\n\\=\\`\\{\\$\\**\\//\\_\\_\\~~\\^\\"]
+     "\\-\n\\#\n\\|\n\\=\\`\\{\\$\\**\\//\\_\\_\\~~\\^\\"];
+
+  assert_raises
+    (Failure "Illegal backslash escape: n")
+    (fun () -> parse "\\not escapable")
 
 let link _ =
   wrap_assert
