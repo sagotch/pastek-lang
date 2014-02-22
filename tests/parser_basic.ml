@@ -401,6 +401,13 @@ let extern _ =
       [Paragraph [Plain "%%% dot"]],
       "%%% dot"
     ]
+
+let comment _ =
+  assert_equal [
+      [CommentBlock"comment"],"<<<comment>>>";
+      [CommentBlock"com\nment"],"<<<com\nment>>>";
+      [CommentBlock"comment>>> "],"<<<comment\\>>> >>>";
+    ]
                                
 let suite = 
   "Suite" >:::
@@ -421,7 +428,8 @@ let suite =
      "Image" >:: image;
      "HTML entitie" >:: html_entitie;
      "Greek letter" >:: greek_letter;
-     "Extern rendering" >:: extern;]
+     "Extern rendering" >:: extern;
+     "Comment" >:: comment;]
 
 let _  =
   run_test_tt_main suite

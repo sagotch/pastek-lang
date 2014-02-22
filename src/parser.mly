@@ -27,7 +27,7 @@
 
 %token<int> TITLE OITEM UITEM
 %token<string> PLAIN INLINE_CODE CODE_BLOCK INLINE_SOURCE SOURCE_BLOCK
-               LINK HTML_ENTITIE
+               LINK HTML_ENTITIE COMMENT_BLOCK
 %token<string * string> IMAGE EXT
 %token<char> SUP SUB GREEK_LETTER
 %token BOLD ITALIC UNDERLINE STRIKE EMPTYLINE MATH MATH_BLOCK
@@ -47,7 +47,7 @@ document:
 
 block_list:
 | bl=header | bl=paragraph | bl=code_block | bl=source_block | bl=math_block
-| bl=eof | bl=list_t | bl=table | bl=ext { bl }
+| bl=eof | bl=list_t | bl=table | bl=ext | bl=comment_block { bl }
 
 eof:
 | EOF { [] }
@@ -137,6 +137,12 @@ ext:
 | EXT ext_f { ExternRender (fst $1, snd $1) :: $2 }
 
 ext_f:
+| EMPTYLINE* block_list { $2 }
+
+comment_block:
+| COMMENT_BLOCK comment_block_f { CommentBlock $1 :: $2 }
+
+comment_block_f:
 | EMPTYLINE* block_list { $2 }
 
 (*** INLINE ELEMENTS ***)

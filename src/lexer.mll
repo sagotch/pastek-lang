@@ -45,6 +45,7 @@ rule line_beginning acc = parse
 | "$$$" '\n'?                   { line (acc << MATH_BLOCK) (create 42) lexbuf }
 | "%%%" ([^' ' '\n']+ as cmd) [' ' '\n']?
                                       { ext_render cmd acc (create 42) lexbuf }
+| "<<<"                                { comment_block acc (create 42) lexbuf }
 | ""                                            { line acc (create 42) lexbuf }
 
 and line acc buffer = parse
@@ -150,12 +151,18 @@ and link depth url acc buff = parse
     else link (depth - 1) url acc (s >>> buff) lexbuf }
 | _ as c                              { link depth url acc (c >> buff) lexbuf }
 
+and comment_block acc buff = parse
+| "\\>"                              { comment_block acc ('>' >> buff) lexbuf }
+| ">>>\n"      { line_beginning (acc << COMMENT_BLOCK (contents buff)) lexbuf }
+| ">>>" eof                   { return (acc << COMMENT_BLOCK (contents buff)) }
+| _ as c                               { comment_block acc (c >> buff) lexbuf }
+
 (*** CONFIGURATION ***)
+
 and first_line = parse
 | ['\n' ' ']                                              { first_line lexbuf }
 | "%{"                                     { config (Buffer.create 42) lexbuf }
 | ""                         { (Hashtbl.create 0), (line_beginning [] lexbuf) }
-
 
 (* "%}" point the end of configuration part.
  * It may be escaped *)

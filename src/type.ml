@@ -9,6 +9,7 @@ type document = block list
    | CodeBlock of string
    | SourceBlock of string
    | ExternRender of string * string
+   | CommentBlock of string
 
  and list_t = bool * item_t list
 
@@ -45,6 +46,8 @@ and string_of_block = function
   | Table (head, cont) -> "Table(" ^ string_of_table (head, cont) ^ ")"
   | List l -> string_of_list l
   | ExternRender (cmd, src) -> "ExternRender(" ^ cmd ^ ", " ^ src ^ ")"
+  | CommentBlock s -> "CommentBlock(" ^ s ^ ")"
+
 
 and string_of_table (head, cont) =
   (match head with

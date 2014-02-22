@@ -20,6 +20,7 @@ let math_block = "$$$Lorem$$$"
 let paragraph = "Ispum"
 let ext1 = "%%%Lorem\nLorem%%%"
 let ext2 = "%%%Lorem Lorem%%%"
+let comment = "<<<Lorem>>>"
 
 let parse str =
   let lexbuf = Lexing.from_string str in
@@ -63,6 +64,7 @@ module type Test_battery = sig
     val paragraph : string list
     val ext1 : string list
     val ext2 : string list
+    val comment : string list
 
 end
 
@@ -104,6 +106,7 @@ let title_followers _ =
            let paragraph = emptyline
            let ext1 = eol
            let ext2 = eol
+           let comment = eol
          end)
   in T.run_tests
 
@@ -123,6 +126,7 @@ let list_followers _ =
                          let paragraph = emptyline
                          let ext1 = eol
                          let ext2 = eol
+                         let comment = eol
                        end)
     in T.run_tests
   in
@@ -146,6 +150,7 @@ let paragraph_followers _ =
            let paragraph = emptyline
            let ext1 = eol
            let ext2 = eol
+           let comment = eol
          end)
   in T.run_tests
 
@@ -166,6 +171,7 @@ let delimited_blocks _ =
                          let paragraph = eol
                          let ext1 = eol
                          let ext2 = eol
+                         let comment = eol
                        end)
     in T.run_tests
   in
@@ -173,7 +179,8 @@ let delimited_blocks _ =
   mk_tests source_block;
   mk_tests math_block;
   mk_tests ext1;
-  mk_tests ext2
+  mk_tests ext2;
+  mk_tests comment
 
 let suite = 
   "Suite" >:::
