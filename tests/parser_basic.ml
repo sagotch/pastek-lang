@@ -2,6 +2,8 @@ open OUnit
 open Type
 open Lexer
 
+(* HELPERS *)
+
 let parse str =
   let lexbuf = Lexing.from_string str in
   snd @@ Lexer.parse lexbuf
@@ -15,6 +17,24 @@ let assert_equal tests =
 let wrap_assert wrapper test =
   List.map (fun (e, i) -> wrapper e, i) test |> assert_equal
 
+let emp = ["**";"//";"~~";"__"]
+
+let mk_emp emp x = match emp with
+  | "**" -> Bold x
+  | "//" -> Italic x
+  | "~~" -> Strike x
+  | "__" -> Underline x
+  | _ as s -> failwith ("not a emphasis mark: " ^ s)
+
+
+let combine l1 l2 =
+  List.fold_left (fun acc x -> List.rev_append acc
+                               @@ List.map (fun y -> (x,y)) l2) [] l1
+
+(* TESTS *)
+
+let empty _ =
+  wrap_assert (fun x -> x) [[],"";[],"\n\n"]
 
 let title _ =
   wrap_assert
@@ -22,10 +42,13 @@ let title _ =
     [
       (3, [Plain "Lorem"]), "=== Lorem === ";
       (3, [Plain "Lorem"]), "=== Lorem ===";
+      (3, [Plain "Lorem "; Plain"Ipsum"]), "=== Lorem \nIpsum===";
       (3, [Plain "Lorem ="]), "=== Lorem ==== ";
       (3, [Plain "Lorem ="]), "=== Lorem = === ";
       (3, [Plain "= Lorem ="]), "=== = Lorem = === ";
       (1, [Plain "Lorem"]), "= Lorem";
+      (1, []), "=";
+      (1, []), "= =";
 
       (1, [Plain "Lo";Sup[Plain"rem"]]), "= Lo^{rem} = ";
     ]
@@ -37,48 +60,23 @@ let paragraph _ =
      "Lorem ipsum.", "  Lorem ipsum."]
 
 let emphasis _ =
+
   wrap_assert
     (fun x -> [Paragraph x])
-    [
-      [Bold [Plain "Lorem"]; Plain " ipsum."],
-      "**Lorem** ipsum.";
-      [Plain "Lorem "; Italic [Plain "ipsum"]; Plain "."],
-      "Lorem //ipsum//.";
+  @@ List.map (fun e -> ([mk_emp e[Plain"Lorem"];Plain"Ipsum"],
+                        e^"Lorem"^e^"Ipsum")) emp;
 
-      [Plain"Lorem ";Underline[Plain"ipsum dolor"];Plain" sit."],
-      "Lorem __ipsum dolor__ sit.";
-
-      [Plain "Lorem "; Strike [Plain "ipsum."]],
-      "Lorem ~~ipsum.~~";
-
-      [Bold[Italic[Plain "Lo";Bold[Plain "rem"]];Plain" ipsum."];
-       Bold[Underline[Plain "Lo";Bold[Plain "rem"]];Plain" ipsum."];
-       Bold[Strike[Plain "Lo";Bold[Plain "rem"]];Plain" ipsum."]],
-      "**//Lo**rem**// ipsum.**
-       **__Lo**rem**__ ipsum.**
-       **~~Lo**rem**~~ ipsum.**";
-
-      [Italic[Bold[Plain"Lo";Italic[Plain "rem"]];Plain " ipsum."];
-       Italic[Underline[Plain"Lo";Italic[Plain"rem"]];Plain" ipsum."];
-       Italic[Strike[Plain"Lo";Italic[Plain "rem"]];Plain" ipsum."]],
-      "//**Lo//rem//** ipsum.//
-       //__Lo//rem//__ ipsum.//
-       //~~Lo//rem//~~ ipsum.//";
-
-      [Underline[Bold[Plain"Lo";Underline[Plain "rem"]];Plain " ipsum."];
-       Underline[Italic[Plain"Lo";Underline[Plain"rem"]];Plain" ipsum."];
-       Underline[Strike[Plain"Lo";Underline[Plain"rem"]];Plain" ipsum."]],
-      "__**Lo__rem__** ipsum.__
-       __//Lo__rem__// ipsum.__
-       __~~Lo__rem__~~ ipsum.__";
-
-      [Strike[Bold[Plain"Lo";Strike[Plain "rem"]];Plain " ipsum."];
-       Strike[Italic[Plain"Lo";Strike[Plain"rem"]];Plain" ipsum."];
-       Strike[Underline[Plain"Lo";Strike[Plain"rem"]];Plain" ipsum."]],
-      "~~**Lo~~rem~~** ipsum.~~
-       ~~//Lo~~rem~~// ipsum.~~
-       ~~__Lo~~rem~~__ ipsum.~~";
-    ];
+  wrap_assert
+    (fun x -> [Paragraph x])
+  @@ List.fold_left
+       begin
+         fun acc (emp, emp') ->
+         if emp = emp'
+         then acc
+         else ([mk_emp emp[Plain"Lorem";mk_emp emp'[Plain"Ipsum"]]],
+               emp^"Lorem"^emp'^"Ipsum"^emp'^emp) :: acc
+       end
+       [] (combine emp emp);
 
   assert_raises Parser.Error (fun () -> parse "**//Lorem** ipsum.//");
   assert_raises Parser.Error (fun () -> parse "//**Lorem// ipsum.**");
@@ -88,7 +86,7 @@ let emphasis _ =
   (* unterminated emphasis *)
   List.iter
     (fun emp -> assert_raises Parser.Error (fun () -> parse (emp^"lorem")))
-    ["**";"//";"~~";"__"]
+    emp
 
 let sup_sub _ =
 
@@ -109,10 +107,6 @@ let sup_sub _ =
 
   let brack_expected = [
     "42", [Plain "42"];
-    "**dolor**", [Bold[Plain"dolor"]];
-    "//dolor//", [Italic[Plain"dolor"]];
-    "~~dolor~~", [Strike[Plain"dolor"]];
-    "__dolor__", [Underline[Plain"dolor"]];
 
     "x_{i}", [Plain"x";Sub[Plain"i"]];
     "x^{i}", [Plain"x";Sup[Plain"i"]];
@@ -124,7 +118,8 @@ let sup_sub _ =
 
     "{{}}", [InlineSource""]
 
-  ]
+  ] @ List.map (fun e -> e^"lorem"^e, [mk_emp e[Plain"lorem"]]) emp
+
 
   and expected =
     List.map (fun x -> x, [Plain x]) ["i"; "2"; "}"]
@@ -138,22 +133,12 @@ let sup_sub _ =
   (* curly brackets allow to nest emphasis with same mark *)
   wrap_assert (fun x -> [Paragraph x])
   @@ List.concat
-  @@ List.map
-       begin
-         fun emp -> let
-           mk_emp x = function
-           | "**" -> Bold x
-           | "//" -> Italic x
-           | "~~" -> Strike x
-           | "__" -> Underline x
-           | _ as s -> failwith ("not a emphasis mark: " ^ s)
-         in
-         [[mk_emp[Plain"L";Sup[mk_emp[Plain"i"]emp]]emp],
-          (emp^"L^{"^emp^"i"^emp^"}"^emp);
-          [mk_emp[Plain"L";Sub[mk_emp[Plain"i"]emp]]emp],
-          (emp^"L_{"^emp^"i"^emp^"}"^emp)]
-       end
-       ["**";"//";"~~";"__"];
+  @@ List.map (fun e ->
+               [[mk_emp e[Plain"L";Sup[mk_emp e[Plain"i"]]]],
+                (e^"L^{"^e^"i"^e^"}"^e);
+                [mk_emp e[Plain"L";Sub[mk_emp e[Plain"i"]]]],
+                (e^"L_{"^e^"i"^e^"}"^e)])
+              emp;
 
   assert_raises (Failure"lexing: empty token")(fun()->parse"Lorem_{ipsum");
   assert_raises (Failure"lexing: empty token")(fun()->parse"Lorem^{ipsum")
@@ -209,7 +194,7 @@ let math _ =
   List.iter
     (fun emp -> assert_raises (Failure "TODO: raise Parser.Error")
                               (fun () -> parse ("$$Lor"^emp^"em"^emp^"$$")))
-    ["**";"//";"~~";"__"];
+    emp;
 
   (* eof is not allowed in inline_math *)
   assert_raises (Failure "TODO: raise Parser.Error")
@@ -244,6 +229,10 @@ let list_t _ =
                           [Item([Plain"ipsum"], None)]));
                Item([Plain"dolor"], None)]),
       "- Lorem\n##ipsum\n-dolor";
+
+      (false, [Item([],None);
+               Item([],None)]),
+      "-\n-";
     ];
   
   assert_raises
@@ -415,7 +404,8 @@ let extern _ =
                                
 let suite = 
   "Suite" >:::
-    ["Title" >:: title;
+    ["Empty document" >:: empty;
+     "Title" >:: title;
      "Paragraph" >:: paragraph;
      "Emphasis text" >:: emphasis;
      "Superscript and subscript" >:: sup_sub;
