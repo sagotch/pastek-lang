@@ -56,18 +56,22 @@ eof:
  * paragraphs with an empty line.
  * NB: This implentation add the Str library dependency *)
 header:
-| TITLE inline(regular)+ header_f
-  { let l = List.rev $2 in
-    let h = List.hd l and q = List.tl l in
-    match h with
-    | Plain s ->
-       (try let i =
-              search_forward (regexp (" *" ^ String.make $1 '=' ^ " *$")) s 0 
-            in if i = 0
-               then Title ($1, List.rev q) :: $3
-               else Title ($1, List.rev (Plain (String.sub s 0 i) :: q)) :: $3
-        with Not_found -> Title ($1, $2) :: $3)
-    | _ -> Title ($1, $2) :: $3 }
+| TITLE inline(regular)* header_f
+  { let default () = Title ($1, $2) :: $3 in
+    if $2 = []
+    then default ()
+    else
+      let l = List.rev $2 in
+      let h = List.hd l and q = List.tl l in
+      match h with
+      | Plain s ->
+         (try let i =
+                search_forward (regexp (" *" ^ String.make $1 '=' ^ " *$")) s 0 
+              in if i = 0
+                 then Title ($1, List.rev q) :: $3
+                 else Title ($1, List.rev (Plain (String.sub s 0 i) :: q)) :: $3
+          with Not_found -> default ())
+      | _ -> default ()}
 
 header_f:
 | EMPTYLINE+ hf=block_list { hf }
