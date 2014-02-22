@@ -6,7 +6,7 @@
 
 A powerful lightweight markup language.
 
-This is version 20140210.
+This is version 20140222.
 
 == General notes ==
 
@@ -75,6 +75,14 @@ Math block        $$$
                                                   a^2 + b^2 = c^2
                   ...
                   $$$
+
+Comment block     <<<
+                     This is a comment.
+                     It won't be visible in final rendering.
+                     Useful if you want to add thoughts in you document
+                     especially to share them with other people working on
+                     it.
+                  >>>
 ```
 
 == Configuration ==
