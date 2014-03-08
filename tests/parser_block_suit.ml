@@ -87,7 +87,8 @@ module Test = functor (B : Test_battery) ->
       test math_block B.math_block;
       test paragraph B.paragraph;
       test ext1 B.ext1;
-      test ext2 B.ext2
+      test ext2 B.ext2;
+      test comment B.comment
   end
 
 let title_followers _ =

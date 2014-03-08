@@ -77,7 +77,7 @@ header:
 header_f:
 | EMPTYLINE+ hf=block_list { hf }
 | hf=header | hf=code_block | hf=source_block | hf=math_block | hf=eof
-| hf=table | hf=ext | hf=list_t | hf=link_definition
+| hf=table | hf=ext | hf=list_t | hf=link_definition | hf=comment_block 
   { hf }
 
 table:
@@ -92,7 +92,7 @@ table_line:
 
 table_f:
 | tf=header | tf=paragraph | tf=code_block | tf=source_block | tf=math_block
-| tf=eof | tf=list_t | tf=ext | tf=link_definition { tf }
+| tf=eof | tf=list_t | tf=ext | tf=link_definition | tf=comment_block { tf }
 | EMPTYLINE+ block_list { $2 }
 
 list_t:
@@ -104,7 +104,7 @@ item_t:
 
 list_t_f:
 | lf=header | lf=code_block | lf=math_block | lf=table | lf=source_block
-| lf=eof | lf=ext | lf=link_definition { lf }
+| lf=eof | lf=ext | lf=link_definition | lf=comment_block { lf }
 | EMPTYLINE+ lf=block_list { lf }
 
 paragraph:
@@ -112,7 +112,7 @@ paragraph:
 
 paragraph_f:
 | pf=header | pf=eof | pf=code_block | pf=source_block | pf=math_block
-| pf=table | pf=ext | pf=list_t | pf=link_definition
+| pf=table | pf=ext | pf=list_t | pf=link_definition | pf=comment_block 
   { pf }
 | EMPTYLINE+ block_list { $2 }
 
