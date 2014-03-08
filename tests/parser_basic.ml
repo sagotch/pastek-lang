@@ -356,6 +356,15 @@ let image _ =
       "[[foo<<[[bar||bu]]]]"
     ]
 
+(* FIXME: this does not test that foo is correctly redefined *)
+let url_definition _ =
+  assert_equal [
+    [], "[[ foo ]] :: [[bar]]";
+    [], "[[ foo ]] \n:: [[bar]]";
+    [], "[[ foo ]] ::\n [[bar]]";
+    [], "[[ foo ]]\n ::\n [[bar]]";
+  ]
+
 let html_entitie _ =
   wrap_assert
     (fun x -> [Paragraph x])

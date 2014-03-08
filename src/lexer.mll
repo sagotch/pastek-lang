@@ -22,7 +22,8 @@
 
 }
 
-let escapable = ['-' '#' '|' '=' '`' '{' '$' '*' '/' '_' '~' '^' '\\' '[' '&']
+let escapable = ['-' '#' '|' '=' '`' '{' '$' '*' '/' '_' '~' '^' '\\' '[' '&'
+                 '<']
 
 let lower = ['a'-'z']
 let upper = ['A'-'Z']
@@ -123,9 +124,12 @@ and sup_sub opened closing acc buffer = parse
       else sup_sub (opened - 1) closing acc ('}' >> buffer) lexbuf }
 | _ as c        { add_char buffer c; sup_sub opened closing acc buffer lexbuf }
 
+(* FIXE ME: Unable to write "[[link]] ::" without declaring a link *)
 and url acc buff = parse
 | [' ' '\n']* "||" [' ' '\n']* { image (contents buff) acc (create 42) lexbuf }
 | [' ' '\n']* "<<" [' ' '\n']*{ link 1 (contents buff) acc (create 42) lexbuf }
+| [' ' '\n']* "]]" (' '* '\n'? ' '*) "::" (' '* '\n'? ' '*)
+            { line_beginning ( acc << LINK_DEFINITION (contents buff)) lexbuf }
 | [' ' '\n']* "]]"
          { line ( acc << LINK (contents buff) << LINK_END) (create 42) lexbuf }
 | '\\' (['|' '<' ']'] as c)                      { url acc (c >> buff) lexbuf }

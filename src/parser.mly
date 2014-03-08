@@ -27,7 +27,7 @@
 
 %token<int> TITLE OITEM UITEM
 %token<string> PLAIN INLINE_CODE CODE_BLOCK INLINE_SOURCE SOURCE_BLOCK
-               LINK HTML_ENTITIE COMMENT_BLOCK
+               LINK LINK_DEFINITION HTML_ENTITIE COMMENT_BLOCK
 %token<string * string> IMAGE EXT
 %token<char> SUP SUB GREEK_LETTER
 %token BOLD ITALIC UNDERLINE STRIKE EMPTYLINE MATH MATH_BLOCK
@@ -47,7 +47,8 @@ document:
 
 block_list:
 | bl=header | bl=paragraph | bl=code_block | bl=source_block | bl=math_block
-| bl=eof | bl=list_t | bl=table | bl=ext | bl=comment_block { bl }
+| bl=eof | bl=list_t | bl=table | bl=ext | bl=comment_block 
+| bl=link_definition { bl }
 
 eof:
 | EOF { [] }
@@ -76,7 +77,7 @@ header:
 header_f:
 | EMPTYLINE+ hf=block_list { hf }
 | hf=header | hf=code_block | hf=source_block | hf=math_block | hf=eof
-| hf=table | hf=ext | hf=list_t
+| hf=table | hf=ext | hf=list_t | hf=link_definition
   { hf }
 
 table:
@@ -91,7 +92,7 @@ table_line:
 
 table_f:
 | tf=header | tf=paragraph | tf=code_block | tf=source_block | tf=math_block
-| tf=eof | tf=list_t | tf=ext { tf }
+| tf=eof | tf=list_t | tf=ext | tf=link_definition { tf }
 | EMPTYLINE+ block_list { $2 }
 
 list_t:
@@ -103,7 +104,7 @@ item_t:
 
 list_t_f:
 | lf=header | lf=code_block | lf=math_block | lf=table | lf=source_block
-| lf=eof | lf=ext { lf }
+| lf=eof | lf=ext | lf=link_definition { lf }
 | EMPTYLINE+ lf=block_list { lf }
 
 paragraph:
@@ -111,7 +112,7 @@ paragraph:
 
 paragraph_f:
 | pf=header | pf=eof | pf=code_block | pf=source_block | pf=math_block
-| pf=table | pf=ext | pf=list_t
+| pf=table | pf=ext | pf=list_t | pf=link_definition
   { pf }
 | EMPTYLINE+ block_list { $2 }
 
@@ -143,6 +144,12 @@ comment_block:
 | COMMENT_BLOCK comment_block_f { CommentBlock $1 :: $2 }
 
 comment_block_f:
+| EMPTYLINE* block_list { $2 }
+
+link_definition:
+| LINK_DEFINITION LINK LINK_END link_definition_f { $4 }
+
+link_definition_f:
 | EMPTYLINE* block_list { $2 }
 
 (*** INLINE ELEMENTS ***)
