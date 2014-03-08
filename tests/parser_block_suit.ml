@@ -17,7 +17,7 @@ let code_block = "```Lorem```"
 let source_block = "{{{Lorem}}}"
 let table = "|Lorem|"
 let math_block = "$$$Lorem$$$"
-let paragraph = "Ispum"
+let paragraph = "Lorem"
 let ext1 = "%%%Lorem\nLorem%%%"
 let ext2 = "%%%Lorem Lorem%%%"
 let comment = "<<<Lorem>>>"
@@ -34,7 +34,7 @@ let assert_not_equal str str' separators =
         let p1 = parse str @ parse str'
         and p2 = parse (str ^ d ^ str') in
         assert_bool
-          (str ^ d ^ str' ^ ": equals " ^ string_of_document p1)
+          (str ^ d ^ str' ^ " == " ^ string_of_document p1)
           (p1 <> p2)
       with Failure _ | Parser.Error-> assert_bool "" true
     end
