@@ -96,6 +96,7 @@ class render_html (config : TomlType.tomlTable) = object(self)
          
     in List.iter render_inline inlines
 
+  method render_comment comment = ()
 
   (**
    * Note:

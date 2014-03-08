@@ -10,13 +10,15 @@ class virtual render (config : TomlType.tomlTable) = object (self)
 
     method virtual render_title : int -> inline list -> unit
     method virtual render_paragraph : inline list -> unit
-    method virtual render_math_block : inline list -> unit
     method virtual render_table :
              inline list list option -> inline list list list -> unit
     method virtual render_list : list_t -> unit
+    method virtual render_math_block : inline list -> unit
     method virtual render_code_block : string -> unit
     method virtual render_source_block : string -> unit
     method virtual render_extern : string -> string -> unit
+    method virtual render_comment : string -> unit
+
     method virtual pre_render : unit -> unit
     method virtual post_render : unit -> unit
 
@@ -26,12 +28,13 @@ class virtual render (config : TomlType.tomlTable) = object (self)
         (function
           | Title(level, inlines) -> self#render_title level inlines
           | Paragraph(inlines) -> self#render_paragraph inlines
-          | MathBlock(inlines) -> self#render_math_block inlines
           | Table(headers, content) -> self#render_table headers content
           | List(li) -> self#render_list li
+          | MathBlock(inlines) -> self#render_math_block inlines
           | CodeBlock(data) -> self#render_code_block data
           | SourceBlock(data) -> self#render_source_block data
-          | ExternRender(cmd, data) -> self#render_extern cmd data)
+          | ExternRender(cmd, data) -> self#render_extern cmd data
+          | CommentBlock(comment) -> self#render_comment comment)
         doc;
       self#post_render ()
 
