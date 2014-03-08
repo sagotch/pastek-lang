@@ -126,10 +126,10 @@ and sup_sub opened closing acc buffer = parse
 and url acc buff = parse
 | [' ' '\n']* "||" [' ' '\n']* { image (contents buff) acc (create 42) lexbuf }
 | [' ' '\n']* "<<" [' ' '\n']*{ link 1 (contents buff) acc (create 42) lexbuf }
-| [' ' '\n']* "]]" [' ' '\n']*
+| [' ' '\n']* "]]"
          { line ( acc << LINK (contents buff) << LINK_END) (create 42) lexbuf }
 | '\\' (['|' '<' ']'] as c)                      { url acc (c >> buff) lexbuf }
-| ('\n' ' '*)?                                          { url acc buff lexbuf }
+| ('\n' ' '*)                                           { url acc buff lexbuf }
 |  _ as c                                        { url acc (c >> buff) lexbuf }
 
 and image url acc buff = parse
