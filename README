@@ -26,7 +26,7 @@ Image             [[ url || alt plain txt ]]
 
 Link              [[ url << displayed content ]]
                   [[ url ]]
-                  [[ url ]] :: real_url (url substitution)
+                  [[ url ]] :: [[ real_url ]] (url substitution)
 
 Bold              **words**
 Italic            //words//
