@@ -6,7 +6,7 @@
 
 A powerful lightweight markup language.
 
-This is version 20140222.
+This is 2014.03.08 version.
 
 == General notes ==
 
@@ -26,6 +26,7 @@ Image             [[ url || alt plain txt ]]
 
 Link              [[ url << displayed content ]]
                   [[ url ]]
+                  [[ url ]] :: real_url (url substitution)
 
 Bold              **words**
 Italic            //words//
