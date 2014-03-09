@@ -2,6 +2,8 @@
   open Type
   open Str
 
+  let links_urls = ref []
+
   let rec add_to_list li (ord, dep, txt) =
     let ord', li = li in
     let li = List.rev li in
@@ -27,7 +29,7 @@
 
 %token<int> TITLE OITEM UITEM
 %token<string> PLAIN INLINE_CODE CODE_BLOCK INLINE_SOURCE SOURCE_BLOCK
-               LINK LINK_DEFINITION HTML_ENTITIE COMMENT_BLOCK
+               LINK LINK_URL HTML_ENTITIE COMMENT_BLOCK
 %token<string * string> IMAGE EXT
 %token<char> SUP SUB GREEK_LETTER
 %token BOLD ITALIC UNDERLINE STRIKE EMPTYLINE MATH MATH_BLOCK
@@ -48,7 +50,7 @@ document:
 block_list:
 | bl=header | bl=paragraph | bl=code_block | bl=source_block | bl=math_block
 | bl=eof | bl=list_t | bl=table | bl=ext | bl=comment_block 
-| bl=link_definition { bl }
+| bl=link_url { bl }
 
 eof:
 | EOF { [] }
@@ -77,7 +79,7 @@ header:
 header_f:
 | EMPTYLINE+ hf=block_list { hf }
 | hf=header | hf=code_block | hf=source_block | hf=math_block | hf=eof
-| hf=table | hf=ext | hf=list_t | hf=link_definition | hf=comment_block 
+| hf=table | hf=ext | hf=list_t | hf=link_url | hf=comment_block 
   { hf }
 
 table:
@@ -92,7 +94,7 @@ table_line:
 
 table_f:
 | tf=header | tf=paragraph | tf=code_block | tf=source_block | tf=math_block
-| tf=eof | tf=list_t | tf=ext | tf=link_definition | tf=comment_block { tf }
+| tf=eof | tf=list_t | tf=ext | tf=link_url | tf=comment_block { tf }
 | EMPTYLINE+ block_list { $2 }
 
 list_t:
@@ -104,7 +106,7 @@ item_t:
 
 list_t_f:
 | lf=header | lf=code_block | lf=math_block | lf=table | lf=source_block
-| lf=eof | lf=ext | lf=link_definition | lf=comment_block { lf }
+| lf=eof | lf=ext | lf=link_url | lf=comment_block { lf }
 | EMPTYLINE+ lf=block_list { lf }
 
 paragraph:
@@ -112,7 +114,7 @@ paragraph:
 
 paragraph_f:
 | pf=header | pf=eof | pf=code_block | pf=source_block | pf=math_block
-| pf=table | pf=ext | pf=list_t | pf=link_definition | pf=comment_block 
+| pf=table | pf=ext | pf=list_t | pf=link_url | pf=comment_block 
   { pf }
 | EMPTYLINE+ block_list { $2 }
 
@@ -146,8 +148,12 @@ comment_block:
 comment_block_f:
 | EMPTYLINE* block_list { $2 }
 
-link_definition:
-| LINK_DEFINITION LINK LINK_END link_definition_f { $4 }
+link_url:
+| LINK_URL LINK LINK_END link_url_f { links_urls := ($1, $2) :: !links_urls;
+                                      $4 }
+
+link_url_f:
+| EMPTYLINE* block_list { $2 }
 
 link_definition_f:
 | EMPTYLINE* block_list { $2 }

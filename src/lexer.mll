@@ -129,7 +129,7 @@ and url acc buff = parse
 | [' ' '\n']* "||" [' ' '\n']* { image (contents buff) acc (create 42) lexbuf }
 | [' ' '\n']* "<<" [' ' '\n']*{ link 1 (contents buff) acc (create 42) lexbuf }
 | [' ' '\n']* "]]" (' '* '\n'? ' '*) "::" (' '* '\n'? ' '*)
-            { line_beginning ( acc << LINK_DEFINITION (contents buff)) lexbuf }
+                   { line_beginning ( acc << LINK_URL (contents buff)) lexbuf }
 | [' ' '\n']* "]]"
          { line ( acc << LINK (contents buff) << LINK_END) (create 42) lexbuf }
 | '\\' (['|' '<' ']'] as c)                      { url acc (c >> buff) lexbuf }
