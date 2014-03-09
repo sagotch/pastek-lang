@@ -1,7 +1,9 @@
 %{
   open Type
   open Str
+  open Toml
 
+  let config_blocks = ref []
   let links_urls = ref []
 
   let rec add_to_list li (ord, dep, txt) =
@@ -30,6 +32,7 @@
 %token<int> TITLE OITEM UITEM
 %token<string> PLAIN INLINE_CODE CODE_BLOCK INLINE_SOURCE SOURCE_BLOCK
                LINK LINK_URL HTML_ENTITIE COMMENT_BLOCK
+               CONFIG
 %token<string * string> IMAGE EXT
 %token<char> SUP SUB GREEK_LETTER
 %token BOLD ITALIC UNDERLINE STRIKE EMPTYLINE MATH MATH_BLOCK
@@ -38,19 +41,28 @@
        LINK_END
 %token EOF
 
-%start <Type.document> document
+%start <TomlType.tomlTable * Type.document> document
 
 %%
 
 document:
-| EMPTYLINE* block_list { $2 }
+| EMPTYLINE* block_list
+  { let config = Toml.from_string 
+                 @@ String.concat "\n"
+                 @@ List.rev !config_blocks in
+    let links = Hashtbl.create 0 in
+    List.iter (fun (k, v) ->
+               Hashtbl.add links k (TomlType.TString v))
+              @@ List.rev !links_urls;
+    Hashtbl.add config "__pastek_links_urls" (TomlType.TTable links);
+    config, $2 }
 
 (*** BLOCKS ***)
 
 block_list:
 | bl=header | bl=paragraph | bl=code_block | bl=source_block | bl=math_block
 | bl=eof | bl=list_t | bl=table | bl=ext | bl=comment_block 
-| bl=link_url { bl }
+| bl=link_url | bl=config_block { bl }
 
 eof:
 | EOF { [] }
@@ -155,7 +167,10 @@ link_url:
 link_url_f:
 | EMPTYLINE* block_list { $2 }
 
-link_definition_f:
+config_block:
+| CONFIG config_block_f { config_blocks := $1 :: !config_blocks; $2 }
+
+config_block_f:
 | EMPTYLINE* block_list { $2 }
 
 (*** INLINE ELEMENTS ***)
