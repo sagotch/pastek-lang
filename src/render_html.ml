@@ -78,11 +78,16 @@ class render_html (config : TomlType.tomlTable) = object(self)
                             self#add_string "\" alt=\"";
                             self#add_string txt;
                             self#add_string "\" />"
-      | Link (url, inlines) -> self#add_string "<a href=\"";
-                               self#add_string url;
-                               self#add_string "\">";
-                               self#render_inlines inlines;
-                               self#add_string "</a>"
+      | Link (url, inlines) ->
+         self#add_string "<a href=\"";
+         self#add_string begin
+           try Toml.get_string
+                 (Toml.get_table config "__pastek_links_urls") url
+           with Not_found -> url end;
+         self#add_string "\">";
+         if inlines = [] then self#add_string url
+                         else self#render_inlines inlines;
+         self#add_string "</a>"
       | HTMLEntitie e -> self#add_char '&';
                          self#add_string e;
                          self#add_char ';';
