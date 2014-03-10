@@ -2,11 +2,15 @@ open Type
 open Buffer
 open TomlType
 
-class virtual render (config : TomlType.tomlTable) = object (self)
+type mode = TranslateOnly | GenerateFullDoc
+
+class virtual render (mode : mode) (config : TomlType.tomlTable) =
+  object (self)
     (** Functions of this object are expected to write rendering in
      *  the buffer nammed buffer *)
     val buffer = Buffer.create 0
     val config = config
+    val mode = mode
 
     method virtual render_title : int -> inline list -> unit
     method virtual render_paragraph : inline list -> unit
