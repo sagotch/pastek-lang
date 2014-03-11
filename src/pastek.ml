@@ -10,7 +10,7 @@ let options = Arg.align [
   " Translate into target language only (default behavior).";
 ]
 
-let usage = "usage: pastek_core [options] < input > output"
+let usage = "usage: pastek [options] < input > output"
 
 let _ = Arg.parse options (fun s -> ()) usage
 
