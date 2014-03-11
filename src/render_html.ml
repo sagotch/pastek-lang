@@ -46,7 +46,10 @@ object(self)
   method private render_inlines = fun inlines ->
     let render_inline = function
       | Plain(str) -> self#esc_add_str str
-      | InlineCode(str) -> self#esc_add_str str
+      | InlineCode(str) ->
+         self#add_string "<code>";
+         self#esc_add_str str;
+         self#add_string "</code>"
       | InlineSource(str) -> self#add_string str
       | InlineMath(inlines) ->
          self#add_string "<span class=\"inline_math\">";
