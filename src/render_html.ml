@@ -36,7 +36,7 @@ object(self)
   method private add_string = Buffer.add_string buffer
 
   method private esc_add_str str =
-    let rep = ["<", "&lt;"; ">", "&gt;"; "&", "&amp;"] in
+    let rep = [ "&", "&amp;"; "<", "&lt;"; ">", "&gt;";] in
     self#add_string
     @@ List.fold_left (fun str (reg, rep) ->
                        Str.global_replace (Str.regexp reg) rep str) str rep
