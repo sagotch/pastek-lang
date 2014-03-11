@@ -100,6 +100,7 @@ and code_block acc buffer = parse
 | '\n'? "```" '\n'
                 { line_beginning (acc << CODE_BLOCK (contents buffer)) lexbuf }
 | '\n'? "```" eof              { return (acc << CODE_BLOCK (contents buffer)) }
+| "\\`"                               { code_block acc ('`' >> buffer) lexbuf }
 | _ as c                                { code_block acc (c >> buffer) lexbuf }
 
 and source_block acc buffer = parse

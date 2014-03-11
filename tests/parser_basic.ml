@@ -155,7 +155,7 @@ let inline_code _ =
 let code_block _ =
   assert_equal [
       [CodeBlock "let lorem = ipsum"], "```let lorem = ipsum```";
-      
+      [CodeBlock "let ```lorem = ipsum"], "```let \```lorem = ipsum```";
       [CodeBlock "let lorem = ipsum\nand ipsum = lorem"],
       "```\nlet lorem = ipsum\nand ipsum = lorem\n```"
     ]
