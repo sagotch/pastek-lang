@@ -173,21 +173,17 @@ object(self)
     self#add_string "\n</p>\n"
 
   method render_table headers content = 
-    let render_table_line =
-    List.iter (fun x -> self#add_string "<td>\n";
-                        self#render_inlines x;
-                        self#add_string "\n</td>\n") in
-    let render_table_lines =
-      List.iter (fun x -> self#add_string "<tr>\n";
-                          render_table_line x;
-                          self#add_string "</tr>\n") in
+    let render_table_line tag line =
+      self#add_string "<tr>\n";
+      List.iter (fun x -> self#add_string ("<" ^ tag ^ ">\n");
+                          self#render_inlines x;
+                          self#add_string ("\n</" ^ tag ^ ">\n")) line;
+      self#add_string "</tr>\n" in
     self#add_string "<table>\n";
     (match headers with
-       | None -> ()
-       | Some header -> self#add_string "<th>\n";
-                        render_table_line header;
-                        self#add_string "</th>\n");
-    render_table_lines content;
+     | None -> ()
+     | Some header -> render_table_line "th" header);
+    List.iter (fun x -> render_table_line "td" x) content;
     self#add_string "</table>\n"
 
   method render_list (ord, items) =
