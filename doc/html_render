@@ -2,13 +2,7 @@
 
 == Configuration ==
 
-- ``css`` table contains informations about CSS. If provided, ``inline`` field 
-  will define the default behavior for css inlining (ohterwise, default value 
-  for CSS inlining is ``false``).
-  -- Children tables define stylesheets to include.
-     --- The ``inline`` field is one more time optionnal and allow you to 
-         overwrite default behavior.
-     --- The ``url`` field can not be omitted.
+- ``css`` array contains urls of CSS you want to include.
 - ``cmd`` table contains informations about command used in the document for 
   external rendering. Entries are simples ``(key, value)`` pairs:
   -- ``key`` is the name of the rule as written into the document.
@@ -20,16 +14,10 @@
 
 ```
 %{
-[css]
-    
-    [css.default]
-    url = "https://raw.github.com/sagotch/pastek/res/pastek_default.css"
-    inline = false # default behavior so you may remove this line
-                   # produce lighter documents
-    [css.custom]
-    url = "/home/foo/bar.css"
-    inline = true # inlining allow to copy content of the file in
-                  # document header
+css = [
+       "https://raw.github.com/sagotch/pastek/res/pastek_default.css",
+       "/home/foo/bar.css"
+      ]
 
 [cmd]
    dot = "dot -Tsvg - -"

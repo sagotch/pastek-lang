@@ -107,49 +107,23 @@ object(self)
 
   method render_comment comment = ()
 
-  (**
-   * Note:
-   * CSS inlining only works with local file.
-   *)
-  method pre_render () =
-    if mode = Render.TranslateOnly
-    then ()
-    else
-      let inline_css src =
-        self#add_string "<style type=\"text/css\">\n";
-        let file = open_in src in
-        begin
-          try while true do self#add_string @@ input_line file ^ "\n" done
-          with End_of_file -> close_in file
-        end;
-        self#add_string "</style>\n"
-      and link_css src =
-        self#add_string "<link href=\"";
-        self#add_string src;
-        self#add_string "\" rel=\"stylesheet\">\n" in
-      self#add_string "<!DOCTYPE html>\n<html>\n<head>\n";
-      begin
-        try let css = Toml.get_table config "css" in
-            let inline_default =
-              try Toml.get_bool css "inline" with Not_found -> false in
-            List.iter
-              (fun (i, v) ->
-               let url =
-                 try Toml.get_string v "url"
-                 with Not_found -> failwith ("[css" ^ i ^ "]: missing url") in
-               if try Toml.get_bool v "inline"
-                  with Not_found -> inline_default
-               then inline_css url
-               else link_css url)
-              (Toml.tables_to_list css)
-        with Not_found -> ()
-      end;
-      self#add_string "</head>\n<body>\n"
+  method pre_render () = match mode with
+    | Render.TranslateOnly -> ()
+    | Render.GenerateFullDoc ->
+       self#add_string "<!DOCTYPE html>\n<html>\n<head>\n";
+       begin
+         try List.iter
+               (fun url ->
+                self#add_strings
+                       ["<link href=\""; url; "\" rel=\"stylesheet\">\n"])
+             @@ Toml.get_string_list config "css"
+         with Not_found -> ()
+       end;
+       self#add_string "</head>\n<body>\n"
 
-  method post_render () =
-    if mode = TranslateOnly
-    then ()
-    else self#add_string "</body>\n</html>\n"
+  method post_render () = match mode with
+    | Render.TranslateOnly -> ()
+    | Render.GenerateFullDoc -> self#add_string "</body>\n</html>\n"
 
   method render_title lvl inlines =
     let lvl =
