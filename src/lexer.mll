@@ -48,6 +48,7 @@ rule line_beginning acc = parse
                                       { ext_render cmd acc (create 42) lexbuf }
 | "<<<"                                { comment_block acc (create 42) lexbuf }
 | ""                                            { line acc (create 42) lexbuf }
+| "%{"                                 { config acc (Buffer.create 42) lexbuf }
 
 and line acc buffer = parse
 | "$$$" '\n'           { line_beginning (acc <<< buffer << MATH_BLOCK) lexbuf }
@@ -164,22 +165,17 @@ and comment_block acc buff = parse
 
 (*** CONFIGURATION ***)
 
-and first_line = parse
-| ['\n' ' ']                                              { first_line lexbuf }
-| "%{"                                     { config (Buffer.create 42) lexbuf }
-| ""                                               { line_beginning [] lexbuf }
-
 (* "%}" point the end of configuration part.
  * It may be escaped *)
-and config buff = parse
-| "\\%}"                                      { config ("%}" >>> buff) lexbuf }
-| "%}"                { line_beginning [CONFIG (Buffer.contents buff)] lexbuf }
-| _ as c                                          { config (c >> buff) lexbuf }
+and config acc buff = parse
+| "\\%"                                     { config acc ('%' >> buff) lexbuf }
+| "%}"{ line (acc << CONFIG (Buffer.contents buff)) (Buffer.create 42) lexbuf }
+| _ as c                                      { config acc (c >> buff) lexbuf }
 
 {
   (* Dirty fix to use Menhir with token list *)
   let parse lexbuf =
-    let tokens = first_line lexbuf in
+    let tokens = line_beginning [] lexbuf in
     let tokens = ref tokens in
     let token _ = 
       match !tokens with 
