@@ -116,7 +116,7 @@ object(self)
                (fun url ->
                 self#add_strings
                        ["<link href=\""; url; "\" rel=\"stylesheet\">"])
-             @@ Toml.get_string_list config "css"
+             @@ Toml.get_string_list (Toml.get_table config "css") "urls"
          with Not_found -> ()
        end;
        self#add_string "</head><body>"

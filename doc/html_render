@@ -2,7 +2,8 @@
 
 == Configuration ==
 
-- ``css`` array contains urls of CSS you want to include.
+- ``css`` table contains urls of CSS you want to include.
+  -- subitem ``urls`` is a array of strings providing these urls.
 - ``cmd`` table contains informations about command used in the document for 
   external rendering. Entries are simples ``(key, value)`` pairs:
   -- ``key`` is the name of the rule as written into the document.
