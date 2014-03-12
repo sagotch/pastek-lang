@@ -110,20 +110,20 @@ object(self)
   method pre_render () = match mode with
     | Render.TranslateOnly -> ()
     | Render.GenerateFullDoc ->
-       self#add_string "<!DOCTYPE html>\n<html>\n<head>\n";
+       self#add_string "<!DOCTYPE html><html><head>";
        begin
          try List.iter
                (fun url ->
                 self#add_strings
-                       ["<link href=\""; url; "\" rel=\"stylesheet\">\n"])
+                       ["<link href=\""; url; "\" rel=\"stylesheet\">"])
              @@ Toml.get_string_list config "css"
          with Not_found -> ()
        end;
-       self#add_string "</head>\n<body>\n"
+       self#add_string "</head><body>"
 
   method post_render () = match mode with
     | Render.TranslateOnly -> ()
-    | Render.GenerateFullDoc -> self#add_string "</body>\n</html>\n"
+    | Render.GenerateFullDoc -> self#add_string "</body></html>"
 
   method render_title lvl inlines =
     let lvl =
@@ -132,38 +132,38 @@ object(self)
               ("HTML only supports 6 title levels, turning "
                ^ string_of_int lvl ^ " in <h6>."); 6)
       else lvl in
-    self#add_strings ["<h"; string_of_int lvl; ">\n"];
+    self#add_strings ["<h"; string_of_int lvl; ">"];
     self#render_inlines inlines;
-    self#add_strings ["\n</h"; string_of_int lvl; ">\n"]
+    self#add_strings ["</h"; string_of_int lvl; ">"]
 
   method render_paragraph inlines =
-    self#add_string "<p>\n";
+    self#add_string "<p>";
     self#render_inlines inlines;
-    self#add_string "\n</p>\n"
+    self#add_string "</p>"
 
   method render_math_block inlines =
-    self#add_string "<p class=\"math_block\">\n";
+    self#add_string "<p class=\"math_block\">";
     self#render_inlines inlines;
-    self#add_string "\n</p>\n"
+    self#add_string "</p>"
 
   method render_table headers content = 
     let render_table_line tag line =
-      self#add_string "<tr>\n";
-      List.iter (fun x -> self#add_string ("<" ^ tag ^ ">\n");
+      self#add_string "<tr>";
+      List.iter (fun x -> self#add_string ("<" ^ tag ^ ">");
                           self#render_inlines x;
-                          self#add_string ("\n</" ^ tag ^ ">\n")) line;
-      self#add_string "</tr>\n" in
-    self#add_string "<table>\n";
+                          self#add_string ("</" ^ tag ^ ">")) line;
+      self#add_string "</tr>" in
+    self#add_string "<table>";
     (match headers with
      | None -> ()
      | Some header -> render_table_line "th" header);
     List.iter (fun x -> render_table_line "td" x) content;
-    self#add_string "</table>\n"
+    self#add_string "</table>"
 
   method render_list (ord, items) =
-    self#add_string @@ if ord then "<ol>\n" else "<ul>\n";
+    self#add_string @@ if ord then "<ol>" else "<ul>";
     self#render_items items;
-    self#add_string @@ if ord then "</ol>\n" else "</ul>\n"
+    self#add_string @@ if ord then "</ol>" else "</ul>"
                                                          
   method render_items items =
     let aux item =
@@ -173,13 +173,13 @@ object(self)
       | None -> ()
       | Some child -> self#render_list child in
     List.iter
-      (fun x -> self#add_string "<li>\n"; aux x; self#add_string "\n</li>\n")
+      (fun x -> self#add_string "<li>"; aux x; self#add_string "</li>")
       items
 
   method render_code_block data =
-    self#add_string "<pre>\n<code>\n";
+    self#add_string "<pre><code>";
     self#esc_add_str data;
-    self#add_string "</code>\n</pre>\n"
+    self#add_string "</code></pre>"
 
   method render_source_block data =
     self#add_string data
