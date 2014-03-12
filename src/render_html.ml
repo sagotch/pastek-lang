@@ -205,7 +205,7 @@ object(self)
   method render_code_block data =
     self#add_string "<pre>\n<code>\n";
     self#esc_add_str data;
-    self#add_string "</pre>\n</code>\n"
+    self#add_string "</code>\n</pre>\n"
 
   method render_source_block data =
     self#add_string data
