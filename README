@@ -8,92 +8,23 @@ A powerful lightweight markup language.
 
 This is 2014.03.08 version.
 
-== General notes ==
-
-- Spaces at the beginning of a line are meaningless and will be skiped.
-
 == Syntax ==
 
+Have a look at the [[online documentation]] to discover possibilities of 
+pastek markup language.
+
+== Installation ==
+
+Installation is done via opam. No stable version has been released yet, so 
+you need to use the dev repository.
+
 ```
-Title             = words = (closing '=' are optionnal)
-List              # words
-                    -- words
-                    -- words
-                       --- words
-                  # words
-
-Image             [[ url || alt plain txt ]]
-
-Link              [[ url << displayed content ]]
-                  [[ url ]]
-                  [[ url ]] :: [[ real_url ]] (url substitution)
-
-Bold              **words**
-Italic            //words//
-Underline         __words__
-Strike            ~~words~~
-Inline code       ``words``
-Inline source     {{words}}
-Inline Math       $$words$$
-
-Subscript         _i (one sign)
-                  _{index} (several signs)
-Superscript       ^i (one sign)
-                  ^{index} (several signs)
-
-HTML entitie      &#60;
-                  &isin;
-
-Greek letter      &a
-
-Table             |  head1  |  head2  |  head3  | (optionnal
-                  +-----------------------------+  pair)
-                  | cell1.1 | cell1.2 | cell1.3 |
-                  | cell2.1 | cell2.2 | cell2.3 |
-		  (pipes, plus and minus do not have to match)
-
-Code block        \```
-                  let triple_backquoted =
-                    "Code block"
-                  \```
-
-External command  %%%dot
-                  graph graphname {
-                      a -- b -- c;
-                      b -- d;
-                  }
-                  %%%
-
-Source block      {{{<span style="color:blue">Inline source code.</span>}}}
-                  {{{
-                  <p style="color:red">
-                  Introduce source code in your document.
-                  </p>
-                  }}}
-
-Math block        $$$
-                  &forall; a, b, c &isin; [0;9] | a < b,
-                                                  a^2 + b^2 = c^2
-                  ...
-                  $$$
-
-Comment block     <<<
-                     This is a comment.
-                     It won't be visible in final rendering.
-                     Useful if you want to add thoughts in you document
-                     especially to share them with other people working on
-                     it.
-                  >>>
+opam repository add pastek git://github.com/pastek-project/opam-repo-dev.git
+opam update
+opam install pastek
 ```
 
-== Configuration ==
-
-Configuration is written in TOML. It can be provided by a configuration file, 
-a special header in a document (written inside %{ and }% tags), or by a 
-combination of both. Each rendering module could expect different 
-configuration, so look at their documentation for details:
-
-  - [[ doc/html_render << HTML rendering module ]]
+//You may want/need to use `https://` instead of `git://`//
 
 == Want to help ? ==
 
@@ -113,3 +44,5 @@ Open an issue and ask for a new output format.
 
 Or better, fork the repo, add a module implementing the ``render.mli`` 
 signature and submit it as a pull request.
+
+[[online documentation]] :: [[http://pastek-project.github.io/]]
