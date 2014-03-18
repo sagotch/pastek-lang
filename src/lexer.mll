@@ -20,10 +20,12 @@
 
   let return = List.rev
 
+  let maybe_eol str lexbuf = if str = "\n" then Lexing.new_line lexbuf
+
 }
 
-let escapable = ['-' '#' '|' '=' '`' '{' '$' '*' '/' '_' '~' '^' '\\' '[' '&'
-                 '<']
+let escapable = ['-' '#' '|' '=' '`' '{' '$' '*' '/' '_' '~' '^' '\\' '['
+                 '&' '<']
 
 let lower = ['a'-'z']
 let upper = ['A'-'Z']
@@ -38,14 +40,20 @@ rule line_beginning acc = parse
 | ('#'+ as l) ' '* { line (acc << OITEM (String.length l)) (create 42) lexbuf }
 | ('='+ as l) ' '* { line (acc << TITLE (String.length l)) (create 42) lexbuf }
 | '|' ' '*                       { line (acc << TBL_START) (create 42) lexbuf }
-| '+' ['+' '-']* "+\n"              { line_beginning (acc << TBL_HSEP) lexbuf }
+| '+' ['+' '-']* "+\n"              { Lexing.new_line lexbuf;
+                                      line_beginning (acc << TBL_HSEP) lexbuf }
 | '+' ['+' '-']* '+' eof                           { return (acc << TBL_HSEP) }
-| '\n'                             { line_beginning (acc << EMPTYLINE) lexbuf }
-| "```" '\n'?                             { code_block acc (create 42) lexbuf }
-| "{{{" '\n'?                           { source_block acc (create 42) lexbuf }
-| "$$$" '\n'?             { math_block (acc << MATH_BLOCK) (create 42) lexbuf }
-| "%%%" ([^' ' '\n']+ as cmd) [' ' '\n']?
-                                      { ext_render cmd acc (create 42) lexbuf }
+| '\n'                             { Lexing.new_line lexbuf;
+                                     line_beginning (acc << EMPTYLINE) lexbuf }
+| "```" ('\n'? as e)                      { maybe_eol e lexbuf;
+                                            code_block acc (create 42) lexbuf }
+| "{{{" ('\n'? as e)                    { maybe_eol e lexbuf;
+                                          source_block acc (create 42) lexbuf }
+| "$$$" ('\n'? as e)      { maybe_eol e lexbuf;
+                            math_block (acc << MATH_BLOCK) (create 42) lexbuf }
+| "%%%" ([^' ' '\n']+ as cmd) ([' ' '\n']? as e)
+                                      { maybe_eol e lexbuf;
+                                        ext_render cmd acc (create 42) lexbuf }
 | "<<<"                                { comment_block acc (create 42) lexbuf }
 | ""                                            { line acc (create 42) lexbuf }
 | "%{"                                 { config acc (Buffer.create 42) lexbuf }
@@ -63,10 +71,11 @@ and line acc buffer = parse
 | "[[" ' '*                         { url (acc <<< buffer) (create 42) lexbuf }
 | '^' (_ as c)            { line (acc <<< buffer << SUP c) (create 42) lexbuf }
 | '_' (_ as c)            { line (acc <<< buffer << SUB c) (create 42) lexbuf }
-| ' '* '|' ' '* '\n'      { line_beginning (acc <<< buffer << TBL_END) lexbuf }
+| ' '* '|' ' '* '\n'      { Lexing.new_line lexbuf;
+                            line_beginning (acc <<< buffer << TBL_END) lexbuf }
 | ' '* '|' ' '* eof                      { return (acc <<< buffer << TBL_END) }
 | ' '* '|' ' '*         { line (acc <<< buffer << TBL_SEP) (create 42) lexbuf }
-| '\n'                               { line_beginning (acc <<< buffer) lexbuf }
+| '\n'       { Lexing.new_line lexbuf; line_beginning (acc <<< buffer) lexbuf }
 | '\\' (escapable as c)           { add_char buffer c; line acc buffer lexbuf }
 | '\\' (_ # escapable as c)
                   { failwith ("Illegal backslash escape: " ^ String.make 1 c) }
@@ -81,43 +90,61 @@ and line acc buffer = parse
 
 and inline_code acc buffer = parse
 | "``"       { line (acc << INLINE_CODE (contents buffer)) (create 42) lexbuf }
-| '\n'                                        { inline_code acc buffer lexbuf }
+| '\n'                                        { Lexing.new_line lexbuf;
+                                                inline_code acc buffer lexbuf }
 | _ as c                               { inline_code acc (c >> buffer) lexbuf }
 
 and inline_source acc buffer = parse
 | "}}"     { line (acc << INLINE_SOURCE (contents buffer)) (create 42) lexbuf }
-| '\n'                                      { inline_source acc buffer lexbuf }
+| '\n'                                      { Lexing.new_line lexbuf;
+                                              inline_source acc buffer lexbuf }
 | _ as c                             { inline_source acc (c >> buffer) lexbuf }
 
 (* DELIMITED BLOCKS *)
 
 and ext_render cmd acc buffer = parse
 | "\\%"                           { ext_render cmd acc ('%' >> buffer) lexbuf }
-| '\n'? "%%%"     { line_beginning (acc << EXT (cmd, contents buffer)) lexbuf }
+| ('\n'? as s) "%%%"
+                  { maybe_eol s lexbuf;
+                    line_beginning (acc << EXT (cmd, contents buffer)) lexbuf }
 | _ as c                            { ext_render cmd acc (c >> buffer) lexbuf }
 
 and code_block acc buffer = parse
 | "\\`"                               { code_block acc ('`' >> buffer) lexbuf }
-| '\n'? "```"   { line_beginning (acc << CODE_BLOCK (contents buffer)) lexbuf }
+| '\n'       { Lexing.new_line lexbuf; code_block acc ('\n' >> buffer) lexbuf }
+| ('\n'? as s) "```"
+                { maybe_eol s lexbuf;
+                  line_beginning (acc << CODE_BLOCK (contents buffer)) lexbuf }
 | _ as c                                { code_block acc (c >> buffer) lexbuf }
 
 and source_block acc buffer = parse
 | "\\}"                             { source_block acc ('}' >> buffer) lexbuf }
-| '\n'? "}}}"
-              { line_beginning (SOURCE_BLOCK (contents buffer) :: acc) lexbuf }
+| '\n'     { Lexing.new_line lexbuf; source_block acc ('\n' >> buffer) lexbuf }
+| ('\n'? as s) "}}}"
+              { maybe_eol s lexbuf;
+                line_beginning (SOURCE_BLOCK (contents buffer) :: acc) lexbuf }
 | _ as c                  { add_char buffer c; source_block acc buffer lexbuf }
 
 and math_block acc buffer = parse
 | "\\$"                               { math_block acc ('$' >> buffer) lexbuf }
-| '\n'? "$$$"
-{ let tokens = line_beginning [] @@ Lexing.from_string (contents buffer) in
+| '\n'       { Lexing.new_line lexbuf; math_block acc ('\n' >> buffer) lexbuf }
+| ('\n'? as s) "$$$"
+{ maybe_eol s lexbuf;
+  let tokens = line_beginning [] @@ Lexing.from_string (contents buffer) in
   line_beginning (List.rev_append tokens acc << MATH_BLOCK) lexbuf }
 | _ as c                    { add_char buffer c; math_block acc buffer lexbuf }
 
 and comment_block acc buff = parse
+| '\n'      { Lexing.new_line lexbuf; comment_block acc ('\n' >> buff) lexbuf }
 | "\\>"                              { comment_block acc ('>' >> buff) lexbuf }
 | ">>>"        { line_beginning (acc << COMMENT_BLOCK (contents buff)) lexbuf }
 | _ as c                               { comment_block acc (c >> buff) lexbuf }
+
+and config acc buff = parse
+| '\n'             { Lexing.new_line lexbuf; config acc ('\n' >> buff) lexbuf }
+| "\\%"                                     { config acc ('%' >> buff) lexbuf }
+| "%}"{ line (acc << CONFIG (Buffer.contents buff)) (Buffer.create 42) lexbuf }
+| _ as c                                      { config acc (c >> buff) lexbuf }
 
 (* SUPERSCRIPT/SUBSCRIPT *)
 
@@ -136,7 +163,10 @@ and sup_sub opened closing acc buffer = parse
 
 (* LINK/IMAGE *)
 
-(* FIXE ME: Unable to write "[[link]] ::" without declaring a link *)
+(**
+ * FIXME: Unable to write "[[link]] ::" without declaring a link
+ * FIXME: Updated line number
+ *)
 and url acc buff = parse
 | [' ' '\n']* "||" [' ' '\n']* { image (contents buff) acc (create 42) lexbuf }
 | [' ' '\n']* "<<" [' ' '\n']*{ link 1 (contents buff) acc (create 42) lexbuf }
@@ -151,7 +181,7 @@ and url acc buff = parse
 and image url acc buff = parse
 | "\\]"                                  { image url acc (']' >> buff) lexbuf }
 | ' '* "]]"     { line (acc << IMAGE (url, contents buff)) (create 42) lexbuf }
-| '\n' ' '*                                       { image url acc buff lexbuf }
+| '\n' ' '*               { Lexing.new_line lexbuf; image url acc buff lexbuf }
 | _ as c                                   { image url acc (c >> buff) lexbuf }
 
 and link depth url acc buff = parse
@@ -166,15 +196,6 @@ and link depth url acc buff = parse
               (create 42) lexbuf
     else link (depth - 1) url acc (s >>> buff) lexbuf }
 | _ as c                              { link depth url acc (c >> buff) lexbuf }
-
-(*** CONFIGURATION ***)
-
-(* "%}" point the end of configuration part.
- * It may be escaped *)
-and config acc buff = parse
-| "\\%"                                     { config acc ('%' >> buff) lexbuf }
-| "%}"{ line (acc << CONFIG (Buffer.contents buff)) (Buffer.create 42) lexbuf }
-| _ as c                                      { config acc (c >> buff) lexbuf }
 
 {
   (* Dirty fix to use Menhir with token list *)

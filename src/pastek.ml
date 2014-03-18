@@ -21,9 +21,9 @@ let _ =
     with Parser.Error ->
       let pos = Lexing.lexeme_start_p lexbuf in
       let msg =
-        "Line " ^ string_of_int pos.pos_lnum
-        ^ ", column " ^ string_of_int (pos.pos_cnum - pos.pos_bol)
-        ^ ": syntax error.\n" in
+        "Parsing: \"" ^ Lexing.lexeme lexbuf
+        ^ "\" - Line " ^ string_of_int pos.pos_lnum
+        ^ ", column " ^ string_of_int (pos.pos_cnum - pos.pos_bol) in
       failwith msg
   in
   let r =
