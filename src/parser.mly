@@ -137,31 +137,36 @@ code_block:
 | CODE_BLOCK code_block_f { CodeBlock $1 :: $2 }
 
 code_block_f:
-| EMPTYLINE* block_list { $2 }
+| eof { $1 }
+| EMPTYLINE+ block_list { $2 }
 
 source_block:
 | SOURCE_BLOCK source_block_f { SourceBlock $1 :: $2 }
 
 source_block_f:
-| EMPTYLINE* block_list { $2 }
+| eof { $1 }
+| EMPTYLINE+ block_list { $2 }
 
 math_block:
 | MATH_BLOCK inline(math)+ MATH_BLOCK math_block_f { MathBlock $2 :: $4 }
 
 math_block_f:
-| EMPTYLINE* block_list { $2 }
+| eof { $1 }
+| EMPTYLINE+ block_list { $2 }
 
 ext:
 | EXT ext_f { ExternRender (fst $1, snd $1) :: $2 }
 
 ext_f:
-| EMPTYLINE* block_list { $2 }
+| eof { $1 }
+| EMPTYLINE+ block_list { $2 }
 
 comment_block:
 | COMMENT_BLOCK comment_block_f { CommentBlock $1 :: $2 }
 
 comment_block_f:
-| EMPTYLINE* block_list { $2 }
+| eof { $1 }
+| EMPTYLINE+ block_list { $2 }
 
 link_url:
 | LINK_URL LINK LINK_END link_url_f { links_urls := ($1, $2) :: !links_urls;
@@ -174,7 +179,8 @@ config_block:
 | CONFIG config_block_f { config_blocks := $1 :: !config_blocks; $2 }
 
 config_block_f:
-| EMPTYLINE* block_list { $2 }
+| eof { $1 }
+| EMPTYLINE+ block_list { $2 }
 
 (*** INLINE ELEMENTS ***)
 

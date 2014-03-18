@@ -1,0 +1,48 @@
+= pastek =
+
+[[https://travis-ci.org/pastek-project/pastek.png || Build Status]] 
+[[https://coveralls.io/repos/pastek-project/pastek/badge.png || 
+  Coverage Status]]
+
+A powerful lightweight markup language.
+
+This is 2014.03.08 version.
+
+== Syntax ==
+
+Have a look at the [[online documentation]] to discover possibilities of 
+pastek markup language.
+
+== Installation ==
+
+Installation is done via opam. No stable version has been released yet, so 
+you need to use the dev repository.
+
+```
+opam repository add pastek git://github.com/pastek-project/opam-repo-dev.git
+opam update
+opam install pastek
+```
+
+//You may want/need to use `https://` instead of `git://`//
+
+== Want to help ? ==
+
+=== Test, review, find bugs ===
+
+Play around with ``pastek``, break the parser. If you find a bug, an 
+unexpected behavior or if you think something in the grammar where badly 
+choosen, open an issue to report it.
+
+=== Missing feature ===
+
+Open an issue to ask for a new feature.
+
+=== New output format ===
+
+Open an issue and ask for a new output format.
+
+Or better, fork the repo, add a module implementing the ``render.mli`` 
+signature and submit it as a pull request.
+
+[[online documentation]] :: [[http://pastek-project.github.io/]]

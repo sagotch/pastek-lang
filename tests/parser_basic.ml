@@ -165,8 +165,8 @@ let inline_source _ =
       [Paragraph [InlineSource "<b>Lorem <i>ipsum</i>.</b>"]],
       "{{<b>Lorem <i>ipsum</i>.</b>}}";
       
-      [Paragraph [InlineSource "<b>Lorem <i>ipsum</i>.</b>}}"]],
-      "{{<b>Lorem <i>ipsum</i>.</b>}}}}"
+      [Paragraph [InlineSource "<b>Lorem <i>ipsum</i>.</b>"]],
+      "{{<b>Lorem \n<i>ipsum</i>.</b>}}"
     ]
                
 let source_block _ =
@@ -178,7 +178,7 @@ let source_block _ =
       "{{{\n<p>Lorem\nipsum.</p>\n}}}";
       
       [SourceBlock "<p>Lorem ipsum.</p>}}}"],
-      "{{{\n<p>Lorem ipsum.</p>\n}}}}}}"
+      "{{{\n<p>Lorem ipsum.</p>}}\\}\n}}}"
     ]
                
 let math _ =
@@ -405,7 +405,7 @@ let extern _ =
         "%%%dot\ngraph g{\na -- b -- c;\nb -- d;\n}\n%%%";  
 
       [ExternRender("foo", "%%% %%%")],
-        "%%%foo \\%%% \\%%%%%%";
+        "%%%foo \\%%% %%\\%%%%";
       
       [Paragraph [Plain "%%% dot"]],
       "%%% dot"
