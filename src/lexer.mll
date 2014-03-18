@@ -143,7 +143,7 @@ and comment_block acc buff = parse
 and config acc buff = parse
 | '\n'             { Lexing.new_line lexbuf; config acc ('\n' >> buff) lexbuf }
 | "\\%"                                     { config acc ('%' >> buff) lexbuf }
-| "%}"{ line (acc << CONFIG (Buffer.contents buff)) (Buffer.create 42) lexbuf }
+| "%}"         { line_beginning (acc << CONFIG (Buffer.contents buff)) lexbuf }
 | _ as c                                      { config acc (c >> buff) lexbuf }
 
 (* SUPERSCRIPT/SUBSCRIPT *)
