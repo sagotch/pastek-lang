@@ -54,7 +54,7 @@ object(self)
       | InlineMath(inlines) ->
          self#add_string "<span class=\"inline_math\">";
          self#render_inlines inlines;
-         self#add_string "<span class=\"inline_math\">";
+         self#add_string "</span>";
       | Bold(inlines) ->
          self#add_string "<b>";
          self#render_inlines inlines;
