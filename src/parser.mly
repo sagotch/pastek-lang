@@ -173,6 +173,7 @@ link_url:
                                       $4 }
 
 link_url_f:
+| eof { $1 }
 | EMPTYLINE* block_list { $2 }
 
 config_block:
