@@ -174,7 +174,7 @@ link_url:
 
 link_url_f:
 | eof { $1 }
-| EMPTYLINE* block_list { $2 }
+| EMPTYLINE+ block_list { $2 }
 
 config_block:
 | CONFIG config_block_f { config_blocks := $1 :: !config_blocks; $2 }
