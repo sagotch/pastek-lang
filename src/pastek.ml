@@ -16,8 +16,16 @@ let _ = Arg.parse options (fun s -> ()) usage
 
 let _ =
   let config, doc =
-  let lexbuf = Lexing.from_channel stdin in
-  Lexer.parse lexbuf in
+    let lexbuf = Lexing.from_channel stdin in
+    try Lexer.parse lexbuf
+    with Parser.Error ->
+      let pos = Lexing.lexeme_start_p lexbuf in
+      let msg =
+        "Line " ^ string_of_int pos.pos_lnum
+        ^ ", column " ^ string_of_int (pos.pos_cnum - pos.pos_bol)
+        ^ ": syntax error.\n" in
+      failwith msg
+  in
   let r =
     new render_html
         begin
@@ -27,4 +35,4 @@ let _ =
         end
         config in
   r#render_doc doc;
-  output_string stdout r#get_render
+  output_string stdout r#get_render                             
