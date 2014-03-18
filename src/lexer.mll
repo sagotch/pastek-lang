@@ -43,7 +43,7 @@ rule line_beginning acc = parse
 | '\n'                             { line_beginning (acc << EMPTYLINE) lexbuf }
 | "```" '\n'?                             { code_block acc (create 42) lexbuf }
 | "{{{" '\n'?                           { source_block acc (create 42) lexbuf }
-| "$$$" '\n'?                   { line (acc << MATH_BLOCK) (create 42) lexbuf }
+| "$$$" '\n'?             { math_block (acc << MATH_BLOCK) (create 42) lexbuf }
 | "%%%" ([^' ' '\n']+ as cmd) [' ' '\n']?
                                       { ext_render cmd acc (create 42) lexbuf }
 | "<<<"                                { comment_block acc (create 42) lexbuf }
@@ -51,8 +51,6 @@ rule line_beginning acc = parse
 | "%{"                                 { config acc (Buffer.create 42) lexbuf }
 
 and line acc buffer = parse
-| "$$$" '\n'           { line_beginning (acc <<< buffer << MATH_BLOCK) lexbuf }
-| "$$$" eof                           { return (acc <<< buffer << MATH_BLOCK) }
 | "**"                     { line (acc <<< buffer << BOLD) (create 42) lexbuf }
 | "//"                   { line (acc <<< buffer << ITALIC) (create 42) lexbuf }
 | "__"                { line (acc <<< buffer << UNDERLINE) (create 42) lexbuf }
@@ -79,11 +77,7 @@ and line acc buffer = parse
 | _ as c                                      { line acc (c >> buffer) lexbuf }
 | eof                                               { return (acc <<< buffer) }
 
-and ext_render cmd acc buffer = parse
-| "\\%"                           { ext_render cmd acc ('%' >> buffer) lexbuf }
-| '\n'? "%%%" '\n'{ line_beginning (acc << EXT (cmd, contents buffer)) lexbuf }
-| '\n'? "%%%" eof                { return (acc << EXT (cmd, contents buffer)) }
-| _ as c                            { ext_render cmd acc (c >> buffer) lexbuf }
+(* INLINE DELIMITED BLOCK *)
 
 and inline_code acc buffer = parse
 | "``"       { line (acc << INLINE_CODE (contents buffer)) (create 42) lexbuf }
@@ -91,27 +85,41 @@ and inline_code acc buffer = parse
 | _ as c                               { inline_code acc (c >> buffer) lexbuf }
 
 and inline_source acc buffer = parse
-| "}}" ('}'* as s)            { add_string buffer s;
-                                line (acc << INLINE_SOURCE (contents buffer))
-                                                           (create 42) lexbuf }
+| "}}"     { line (acc << INLINE_SOURCE (contents buffer)) (create 42) lexbuf }
 | '\n'                                      { inline_source acc buffer lexbuf }
 | _ as c                             { inline_source acc (c >> buffer) lexbuf }
 
+(* DELIMITED BLOCKS *)
+
+and ext_render cmd acc buffer = parse
+| "\\%"                           { ext_render cmd acc ('%' >> buffer) lexbuf }
+| '\n'? "%%%"     { line_beginning (acc << EXT (cmd, contents buffer)) lexbuf }
+| _ as c                            { ext_render cmd acc (c >> buffer) lexbuf }
+
 and code_block acc buffer = parse
-| '\n'? "```" '\n'
-                { line_beginning (acc << CODE_BLOCK (contents buffer)) lexbuf }
-| '\n'? "```" eof              { return (acc << CODE_BLOCK (contents buffer)) }
 | "\\`"                               { code_block acc ('`' >> buffer) lexbuf }
+| '\n'? "```"   { line_beginning (acc << CODE_BLOCK (contents buffer)) lexbuf }
 | _ as c                                { code_block acc (c >> buffer) lexbuf }
 
 and source_block acc buffer = parse
-| '\n'? "}}}" ('}'* as s) '\n'
-              { add_string buffer s;
-                line_beginning (SOURCE_BLOCK (contents buffer) :: acc) lexbuf }
-| '\n'? "}}}" ('}'* as s) eof
-              { add_string buffer s;
-                return (SOURCE_BLOCK (contents buffer) :: acc) }
+| "\\}"                             { source_block acc ('}' >> buffer) lexbuf }
+| '\n'? "}}}"
+              { line_beginning (SOURCE_BLOCK (contents buffer) :: acc) lexbuf }
 | _ as c                  { add_char buffer c; source_block acc buffer lexbuf }
+
+and math_block acc buffer = parse
+| "\\$"                               { math_block acc ('$' >> buffer) lexbuf }
+| '\n'? "$$$"
+{ let tokens = line_beginning [] @@ Lexing.from_string (contents buffer) in
+  line_beginning (List.rev_append tokens acc << MATH_BLOCK) lexbuf }
+| _ as c                    { add_char buffer c; math_block acc buffer lexbuf }
+
+and comment_block acc buff = parse
+| "\\>"                              { comment_block acc ('>' >> buff) lexbuf }
+| ">>>"        { line_beginning (acc << COMMENT_BLOCK (contents buff)) lexbuf }
+| _ as c                               { comment_block acc (c >> buff) lexbuf }
+
+(* SUPERSCRIPT/SUBSCRIPT *)
 
 and sup_sub opened closing acc buffer = parse
 | "\\{"                   { sup_sub opened closing acc ('{' >> buffer) lexbuf }
@@ -125,6 +133,8 @@ and sup_sub opened closing acc buffer = parse
            line (List.rev_append tokens acc << closing) (create 42) lexbuf
       else sup_sub (opened - 1) closing acc ('}' >> buffer) lexbuf }
 | _ as c        { add_char buffer c; sup_sub opened closing acc buffer lexbuf }
+
+(* LINK/IMAGE *)
 
 (* FIXE ME: Unable to write "[[link]] ::" without declaring a link *)
 and url acc buff = parse
@@ -156,12 +166,6 @@ and link depth url acc buff = parse
               (create 42) lexbuf
     else link (depth - 1) url acc (s >>> buff) lexbuf }
 | _ as c                              { link depth url acc (c >> buff) lexbuf }
-
-and comment_block acc buff = parse
-| "\\>"                              { comment_block acc ('>' >> buff) lexbuf }
-| ">>>\n"      { line_beginning (acc << COMMENT_BLOCK (contents buff)) lexbuf }
-| ">>>" eof                   { return (acc << COMMENT_BLOCK (contents buff)) }
-| _ as c                               { comment_block acc (c >> buff) lexbuf }
 
 (*** CONFIGURATION ***)
 
