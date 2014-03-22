@@ -1,13 +1,19 @@
 open Lexer
 open Render_html
 
+let version = "2014.03.22"
+
 let full_document = ref false
 
 let options = Arg.align [
   "--full-document", Arg.Set full_document, 
-  " Generate a full standalone document.";
+  "Generate a full standalone document.";
   "--translate-only", Arg.Clear full_document, 
-  " Translate into target language only (default behavior).";
+  "Translate into target language only (default behavior).";
+  "--version", Arg.Unit
+                 (fun () -> print_endline ("pastek version: " ^ version);
+                            exit 0), 
+  "Print pastek version and exit.";
 ]
 
 let usage = "usage: pastek [options] < input > output"
