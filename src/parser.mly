@@ -41,7 +41,7 @@
        LINK_END
 %token EOF
 
-%start <TomlType.tomlTable * Type.document> document
+%start <Toml.table * Type.document> document
 
 %%
 
@@ -50,11 +50,10 @@ document:
   { let config = Toml.from_string 
                  @@ String.concat "\n"
                  @@ List.rev !config_blocks in
-    let links = Hashtbl.create 0 in
-    List.iter (fun (k, v) ->
-               Hashtbl.add links k (TomlType.TString v))
-              @@ List.rev !links_urls;
-    Hashtbl.add config "__pastek_links_urls" (TomlType.TTable links);
+    let links = Toml.create () in
+    List.iter (fun (k, v) -> Toml.add_value links k @@ Toml.mk_string v)
+    @@ List.rev !links_urls;
+    Toml.add_value config "__pastek_links_urls" (Toml.mk_table links);
     config, $2 }
 
 (*** BLOCKS ***)

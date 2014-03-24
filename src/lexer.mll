@@ -1,7 +1,6 @@
 {
   open Buffer
   open Parser
-  open Toml
 
   (* token list addition operator *)
 

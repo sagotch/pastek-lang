@@ -1,10 +1,10 @@
 open Type
 open Buffer
-open TomlType
+open Toml
 
 type mode = TranslateOnly | GenerateFullDoc
 
-class virtual render (mode : mode) (config : TomlType.tomlTable) =
+class virtual render (mode : mode) (config : Toml.table) =
   object (self)
     (** Functions of this object are expected to write rendering in
      *  the buffer nammed buffer *)

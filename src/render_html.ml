@@ -1,6 +1,5 @@
 open Type
 open Render
-open TomlType
 open Unix
 
 let greek_letters = [
@@ -26,7 +25,7 @@ let greek_letters = [
   'y', "#968"
 ]
 
-class render_html (mode : Render.mode) (config : TomlType.tomlTable) =
+class render_html (mode : Render.mode) (config : Toml.table) =
 object(self)
 
   inherit render mode config as super
