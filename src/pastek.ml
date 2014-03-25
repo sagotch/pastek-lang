@@ -10,21 +10,21 @@ let config_file = ref ""
 
 let options = Arg.align [
   "--full-document", Arg.Set full_document, 
-  "Generate a full standalone document.";
+  " Generate a full standalone document.";
 
   "--translate-only", Arg.Clear full_document, 
-  "Translate into target language only (default behavior).";
+  " Translate into target language only (default behavior).";
 
   "--no-default-config", Arg.Set no_default, 
-  "Do not use default (~/.pastek/default_config.toml) file.";
+  " Do not use default (~/.pastek/default_config.toml) file.";
 
   "--config", Arg.Set_string config_file, 
-  "Use provided file as configuration file.";
+  "FILE Use FILE as configuration file.";
 
   "--version", Arg.Unit (fun () ->
                          print_endline ("pastek version: " ^ version);
                          exit 0), 
-  "Print pastek version and exit.";
+  " Print pastek version and exit.";
 ]
 
 let usage = "usage: pastek [options] < input > output"
