@@ -1,6 +1,6 @@
 # custom .travis-ci.sh
 # based on http://anil.recoil.org/2013/09/30/travis-and-ocaml.html
-OPAM_DEPENDS="ocamlfind ounit menhir"
+OPAM_DEPENDS="ocamlfind ounit menhir toml"
 
 case "$OCAML_VERSION,$OPAM_VERSION" in
 3.12.1,1.0.0) ppa=avsm/ocaml312+opam10 ;;
@@ -17,7 +17,9 @@ echo "yes" | sudo add-apt-repository ppa:$ppa
 sudo apt-get update -qq
 sudo apt-get install -qq ocaml ocaml-native-compilers camlp4-extra opam
 export OPAMYES=1
-opam init 
+opam init
+# add sagotch's opam-repo-dev in order to get the 2.0.0 version of Toml
+opam repository add sagotch https://github.com/sagotch/opam-repo-dev.git
 opam install ${OPAM_DEPENDS}
 eval `opam config env`
 
@@ -32,12 +34,6 @@ cat Makefile.config
 make all
 sudo make install # ./configure set PATH_OCAML_PREFIX=/usr instead of
                   # using .opam directory, so we need sudo
-cd ..
-
-# install Toml library from source (not available on opam yet)
-git clone https://github.com/sagotch/To.ml.git
-cd To.ml
-make build && make install
 cd ..
 
 # run test, then send result to coveralls
