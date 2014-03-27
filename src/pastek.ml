@@ -2,7 +2,7 @@ open Lexer
 open Render_html
 open Toml
 
-let version = "0.4.2"
+let version = "0.4.3"
 
 let full_document = ref false
 let no_default = ref false

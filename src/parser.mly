@@ -38,7 +38,7 @@
 %token BOLD ITALIC UNDERLINE STRIKE EMPTYLINE MATH MATH_BLOCK
        TBL_HSEP TBL_START TBL_SEP TBL_END
        SUP_START SUP_END SUB_START SUB_END
-       LINK_END
+       LINK_END LINE_BREAK
 %token EOF
 
 %start <Toml.table * Type.document> document
@@ -225,4 +225,5 @@ inline(param):
 | LINK inline(param)* LINK_END { Link ($1, $2) }
 | HTML_ENTITIE { HTMLEntitie $1 }
 | GREEK_LETTER { GreekLetter $1 }
+| LINE_BREAK { LineBreak }
 | param { $1 }
