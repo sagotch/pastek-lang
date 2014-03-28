@@ -39,6 +39,8 @@ object(self)
     self#add_string
     @@ List.fold_left (fun str (reg, rep) ->
                        Str.global_replace (Str.regexp reg) rep str) str rep
+
+  method private stringify = Str.global_replace (Str.regexp "\"") "\\\"" 
                                      
   method private add_strings = List.iter self#add_string
 
@@ -75,27 +77,30 @@ object(self)
          self#add_string "<del>";
          self#render_inlines inlines;
          self#add_string "</del>"
-      | Sup(inlines) -> self#add_string "<sup>";
-                        self#render_inlines inlines;
-                        self#add_string "</sup>"
+      | Sup(inlines) ->
+         self#add_string "<sup>";
+         self#render_inlines inlines;
+         self#add_string "</sup>"
       | Sub(inlines) -> self#add_string "<sub>";
                         self#render_inlines inlines;
                         self#add_string "</sub>"
-      | Image (url, txt) -> self#add_string "<img src=\"";
-                            self#add_string (maybe_substitute_url url);
-                            self#add_string "\" alt=\"";
-                            self#add_string txt;
-                            self#add_string "\" />"
+      | Image (url, txt) ->
+         self#add_string "<img src=\"";
+         self#add_string @@ self#stringify @@ maybe_substitute_url url;
+         self#add_string "\" alt=\"";
+         self#add_string @@ self#stringify txt;
+         self#add_string "\" />"
       | Link (url, inlines) ->
          self#add_string "<a href=\"";
-         self#add_string (maybe_substitute_url url);
+         self#add_string @@ self#stringify @@ maybe_substitute_url url;
          self#add_string "\">";
          if inlines = [] then self#add_string url
-                         else self#render_inlines inlines;
+         else self#render_inlines inlines;
          self#add_string "</a>"
-      | HTMLEntitie e -> self#add_char '&';
-                         self#add_string e;
-                         self#add_char ';';
+      | HTMLEntitie e ->
+         self#add_char '&';
+         self#add_string e;
+         self#add_char ';';
       | GreekLetter l ->
          self#add_char '&';
          let name =  List.assoc (Char.lowercase l) greek_letters in
@@ -116,7 +121,9 @@ object(self)
          try List.iter
                (fun url ->
                 self#add_strings
-                       ["<link href=\""; url; "\" rel=\"stylesheet\">"])
+                       ["<link href=\"";
+                        self#stringify url;
+                        "\" rel=\"stylesheet\">"])
              @@ Toml.get_string_list (Toml.get_table config "css") "urls"
          with Not_found -> ()
        end;
