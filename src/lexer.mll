@@ -74,6 +74,8 @@ and line acc buffer = parse
                             line_beginning (acc <<< buffer << TBL_END) lexbuf }
 | ' '* '|' ' '* eof                      { return (acc <<< buffer << TBL_END) }
 | ' '* '|' ' '*         { line (acc <<< buffer << TBL_SEP) (create 42) lexbuf }
+| "  \n"               { Lexing.new_line lexbuf;
+                         line_beginning (acc <<< buffer << LINE_BREAK) lexbuf }
 | '\n'       { Lexing.new_line lexbuf; line_beginning (acc <<< buffer) lexbuf }
 | '\\' (escapable as c)           { add_char buffer c; line acc buffer lexbuf }
 | '\\' (_ # escapable as c)

@@ -30,6 +30,7 @@ type document = block list
    | Sub of inline list
    | HTMLEntitie of string
    | GreekLetter of char
+   | LineBreak
 
 let string_of_char c = String.make 1 c
 
@@ -90,3 +91,4 @@ and string_of_inline = function
   | Link (url, txt) ->  "Link(" ^ url ^ ", " ^ string_of_inlines txt ^ ")"
   | HTMLEntitie e -> "HTMLEntitie(" ^ e ^ ")"
   | GreekLetter l -> "GreekLetter(" ^ string_of_char l ^ ")"
+  | LineBreak -> "LineBreak"

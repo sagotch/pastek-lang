@@ -43,6 +43,7 @@ let title _ =
       (3, [Plain "Lorem"]), "=== Lorem === ";
       (3, [Plain "Lorem"]), "=== Lorem ===";
       (3, [Plain "Lorem "; Plain"Ipsum"]), "=== Lorem \nIpsum===";
+      (3, [Plain "Lorem"; LineBreak; Plain"Ipsum"]), "=== Lorem  \nIpsum===";
       (3, [Plain "Lorem ="]), "=== Lorem ==== ";
       (3, [Plain "Lorem ="]), "=== Lorem = === ";
       (3, [Plain "= Lorem ="]), "=== = Lorem = === ";
@@ -55,9 +56,10 @@ let title _ =
 
 let paragraph _ =
   wrap_assert
-    (fun x -> [Paragraph [Plain x]])
-    ["Lorem ipsum.", "  Lorem ipsum.";
-     "Lorem ipsum.", "  Lorem ipsum."]
+    (fun x -> [Paragraph x])
+    [[Plain "Lorem ipsum."], "  Lorem ipsum.";
+     [Plain "Lorem "; Plain "ipsum."], "  Lorem \nipsum.";
+     [Plain "Lorem"; LineBreak; Plain "ipsum."],"  Lorem  \nipsum."]
 
 let emphasis _ =
 
@@ -155,7 +157,7 @@ let inline_code _ =
 let code_block _ =
   assert_equal [
       [CodeBlock "let lorem = ipsum"], "```let lorem = ipsum```";
-      [CodeBlock "let ```lorem = ipsum"], "```let \```lorem = ipsum```";
+      [CodeBlock "let ```lorem = ipsum"], "```let \\```lorem = ipsum```";
       [CodeBlock "let lorem = ipsum\nand ipsum = lorem"],
       "```\nlet lorem = ipsum\nand ipsum = lorem\n```"
     ]

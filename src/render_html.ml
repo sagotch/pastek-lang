@@ -108,7 +108,8 @@ object(self)
          then self#add_string name
          else self#add_string (String.capitalize name);
          self#add_char ';'
-         
+      | LineBreak -> self#add_string "<br />"
+
     in List.iter render_inline inlines
 
   method render_comment comment = ()
