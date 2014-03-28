@@ -43,6 +43,11 @@ object(self)
   method private add_strings = List.iter self#add_string
 
   method private render_inlines = fun inlines ->
+
+    let maybe_substitute_url url =
+      try Toml.get_string (Toml.get_table config "__pastek_links_urls") url
+      with Not_found -> url in
+
     let render_inline = function
       | Plain(str) -> self#esc_add_str str
       | InlineCode(str) ->
@@ -77,16 +82,13 @@ object(self)
                         self#render_inlines inlines;
                         self#add_string "</sub>"
       | Image (url, txt) -> self#add_string "<img src=\"";
-                            self#add_string url;
+                            self#add_string (maybe_substitute_url url);
                             self#add_string "\" alt=\"";
                             self#add_string txt;
                             self#add_string "\" />"
       | Link (url, inlines) ->
          self#add_string "<a href=\"";
-         self#add_string begin
-           try Toml.get_string
-                 (Toml.get_table config "__pastek_links_urls") url
-           with Not_found -> url end;
+         self#add_string (maybe_substitute_url url);
          self#add_string "\">";
          if inlines = [] then self#add_string url
                          else self#render_inlines inlines;
