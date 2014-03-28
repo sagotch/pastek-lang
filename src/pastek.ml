@@ -57,10 +57,10 @@ let _ =
      NB: if file default_config.toml does not exists, it will produce
          failure. *)
   let config =
-    if !no_default
+    let def_conf_file = (Sys.getenv "HOME") ^ "/.pastek/default_config.toml" in
+    if !no_default || not (Sys.file_exists def_conf_file)
     then Toml.create ()
-    else Toml.from_filename
-         @@ (Sys.getenv "HOME") ^ "/.pastek/default_config.toml" in
+    else Toml.from_filename def_conf_file in
 
   if !config_file <> ""
   then Toml.rec_merge config
