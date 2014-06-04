@@ -44,15 +44,26 @@ rule line_beginning acc = parse
 | '+' ['+' '-']* '+' eof                           { return (acc << TBL_HSEP) }
 | '\n'                             { Lexing.new_line lexbuf;
                                      line_beginning (acc << EMPTYLINE) lexbuf }
-| "```" ('\n'? as e)                      { maybe_eol e lexbuf;
-                                            code_block acc (create 42) lexbuf }
-| "{{{" ('\n'? as e)                    { maybe_eol e lexbuf;
-                                          source_block acc (create 42) lexbuf }
-| "$$$" ('\n'? as e)      { maybe_eol e lexbuf;
-                            math_block (acc << MATH_BLOCK) (create 42) lexbuf }
+
+| "```" ('\n'? as e)            { maybe_eol e lexbuf;
+                                  let s = block '`' (create 42) lexbuf in   
+                                  line_beginning (acc << CODE_BLOCK s) lexbuf }
+
+| "{{{" ('\n'? as e)          { maybe_eol e lexbuf;
+                                let s = block '}' (create 42) lexbuf in   
+                                line_beginning (acc << SOURCE_BLOCK s) lexbuf }
+
+| "$$$" ('\n'? as e)
+           { maybe_eol e lexbuf;
+             let s = block '$' (create 42) lexbuf in
+             let acc = acc << MATH_BLOCK in
+             let tokens = Lexing.from_string s |> line_beginning [] in
+             line_beginning (List.rev_append tokens acc << MATH_BLOCK) lexbuf }
+
 | "%%%" ([^' ' '\n']+ as cmd) ([' ' '\n']? as e)
-                                      { maybe_eol e lexbuf;
-                                        ext_render cmd acc (create 42) lexbuf }
+                                { maybe_eol e lexbuf;
+                                  let s = block '%' (create 42) lexbuf in   
+                                  line_beginning (acc << EXT (cmd, s)) lexbuf }
 | "<<<"                                { comment_block acc (create 42) lexbuf }
 | ""                                            { line acc (create 42) lexbuf }
 | "%{"                                 { config acc (Buffer.create 42) lexbuf }
@@ -103,37 +114,16 @@ and inline_source acc buffer = parse
 
 (* DELIMITED BLOCKS *)
 
-and ext_render cmd acc buffer = parse
-| "\\%"                           { ext_render cmd acc ('%' >> buffer) lexbuf }
-| ('\n'? as s) "%%%"
-                  { maybe_eol s lexbuf;
-                    line_beginning (acc << EXT (cmd, contents buffer)) lexbuf }
-| _ as c                            { ext_render cmd acc (c >> buffer) lexbuf }
+and block mark buffer = parse
+| ('\n'? as e) ("```" | "}}}" | "%%%" | "$$$" as s)
+              { maybe_eol e;
+                if s = String.make 3 mark then contents buffer
+                else begin add_string buffer s ; block mark buffer lexbuf end }
+| '\n'           { Lexing.new_line lexbuf; block mark ('\n' >> buffer) lexbuf }
+| '\\' (_ as c)             { if c <> mark then add_char buffer '\\' ;
+                              add_char buffer mark ; block mark buffer lexbuf }
+| _ as c                       { add_char buffer c ; block mark buffer lexbuf }
 
-and code_block acc buffer = parse
-| "\\`"                               { code_block acc ('`' >> buffer) lexbuf }
-| '\n'       { Lexing.new_line lexbuf; code_block acc ('\n' >> buffer) lexbuf }
-| ('\n'? as s) "```"
-                { maybe_eol s lexbuf;
-                  line_beginning (acc << CODE_BLOCK (contents buffer)) lexbuf }
-| _ as c                                { code_block acc (c >> buffer) lexbuf }
-
-and source_block acc buffer = parse
-| "\\}"                             { source_block acc ('}' >> buffer) lexbuf }
-| '\n'     { Lexing.new_line lexbuf; source_block acc ('\n' >> buffer) lexbuf }
-| ('\n'? as s) "}}}"
-              { maybe_eol s lexbuf;
-                line_beginning (SOURCE_BLOCK (contents buffer) :: acc) lexbuf }
-| _ as c                  { add_char buffer c; source_block acc buffer lexbuf }
-
-and math_block acc buffer = parse
-| "\\$"                               { math_block acc ('$' >> buffer) lexbuf }
-| '\n'       { Lexing.new_line lexbuf; math_block acc ('\n' >> buffer) lexbuf }
-| ('\n'? as s) "$$$"
-{ maybe_eol s lexbuf;
-  let tokens = line_beginning [] @@ Lexing.from_string (contents buffer) in
-  line_beginning (List.rev_append tokens acc << MATH_BLOCK) lexbuf }
-| _ as c                    { add_char buffer c; math_block acc buffer lexbuf }
 
 and comment_block acc buff = parse
 | '\n'      { Lexing.new_line lexbuf; comment_block acc ('\n' >> buff) lexbuf }
