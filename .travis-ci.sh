@@ -25,8 +25,7 @@ eval `opam config env`
 
 # install patched bisect library since it is not updated on opam yet
 echo '** INSTALLING PATCHED BISECT LIBRARY'
-wget http://sagotch.fr/Bisect.tar.gz
-tar -xvf Bisect.tar.gz
+curl -L http://bisect.sagotch.fr | tar -xzf -
 cd Bisect
 chmod +x configure
 ./configure
