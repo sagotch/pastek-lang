@@ -1,0 +1,73 @@
+<!DOCTYPE html><html><head><link href="style.css" rel="stylesheet"></head><body><div style="position:fixed;left:1rem;top:1rem;">
+<a href="index.html">Return to index</a>
+</div><div style="position:fixed;right:1rem;top:1rem;">
+<a href=" cheatsheet.pa " target="_new">View Page Source</a>
+</div><h1>Pastek cheatsheet</h1><h2>General notes</h2><ul><li>Spaces at the beginning of a line are meaningless and will be skiped.</li></ul><h2>Syntax</h2><pre><code>Title             = words = (closing '=' are optionnal)
+List              # words
+                    -- words
+                    -- words
+                       --- words
+                  # words
+
+Image             [[ url || alt plain txt ]]
+
+Link              [[ url &lt;&lt; displayed content ]]
+                  [[ url ]]
+                  [[ url ]] :: [[ real_url ]] (url substitution)
+
+Bold              **words**
+Italic            //words//
+Underline         __words__
+Strike            ~~words~~
+Inline code       ``words``
+Inline source     {{words}}
+Inline Math       $$words$$
+
+Subscript         _i (one sign)
+                  _{index} (several signs)
+Superscript       ^i (one sign)
+                  ^{index} (several signs)
+
+HTML entitie      &amp;#60;
+                  &amp;isin;
+
+Greek letter      &amp;a
+
+Table             |  head1  |  head2  |  head3  | (optionnal
+                  +-----------------------------+  pair)
+                  | cell1.1 | cell1.2 | cell1.3 |
+                  | cell2.1 | cell2.2 | cell2.3 |
+		  (pipes, plus and minus do not have to match)
+
+Code block        ```
+                  let triple_backquoted =
+                    "Code block"
+                  ```
+
+External command  %%%dot
+                  graph graphname {
+                      a -- b -- c;
+                      b -- d;
+                  }
+                  %%%
+
+Source block      {{{&lt;span style="color:blue"&gt;Inline source code.&lt;/span&gt;}}}
+                  {{{
+                  &lt;p style="color:red"&gt;
+                  Introduce source code in your document.
+                  &lt;/p&gt;
+                  }}}
+
+Math block        $$$
+                  &amp;forall; a, b, c &amp;isin; [0;9] | a &lt; b,
+                                                  a^2 + b^2 = c^2
+                  ...
+                  $$$
+
+Comment block     &lt;&lt;&lt;
+                     This is a comment.
+                     It won't be visible in final rendering.
+                     Useful if you want to add thoughts in you document
+                     especially to share them with other people working on
+                     it.
+                  &gt;&gt;&gt;</code></pre><h2>Configuration</h2><p>Configuration is written in TOML. It has to be embedded into your document using the <code>%{ %}</code> tags.</p><p>As each rendering engine could expect different configuration, you should look at their documentation:</p><ul><li><a href="html_render.html">HTML rendering module</a></li></ul></body></html>

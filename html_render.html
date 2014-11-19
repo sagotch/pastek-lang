@@ -1,0 +1,14 @@
+<!DOCTYPE html><html><head><link href="style.css" rel="stylesheet"></head><body><div style="position:fixed;left:1rem;top:1rem;">
+<a href="index.html">Return to index</a>
+</div><div style="position:fixed;right:1rem;top:1rem;">
+<a href=" html_render.pa " target="_new">View Page Source</a>
+</div><h1>HTML renderer</h1><h2>Configuration</h2><ul><li><code>css</code> table contains urls of CSS you want to include.<ul><li>subitem <code>urls</code> is a array of strings providing these urls.</li></ul></li><li><code>cmd</code> table contains informations about command used in the document for external rendering. Entries are simples <code>(key, value)</code> pairs:<ul><li><code>key</code> is the name of the rule as written into the document.</li><li><code>value</code> is the actual command to invoke (as it would be called in a shell). It <b>must</b> read from standard input and write result on standard output.</li></ul></li></ul><h2>Example</h2><pre><code>%{
+css = [
+       "https://raw.github.com/sagotch/pastek/res/pastek_default.css",
+       "/home/foo/bar.css"
+      ]
+
+[cmd]
+   dot = "dot -Tsvg - -"
+   hopt = "~/html_tool/hopt"
+%}</code></pre></body></html>

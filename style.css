@@ -1,0 +1,15 @@
+body {font: 13px sans-serif; color: black; text-align: left; padding: 5px; margin: 0; width: 80%; max-with: 960px; margin:auto; }
+h1 { font-size : 3rem; text-align: center; }
+h2 { font-size : 2rem; border: 1px solid #000000; margin-top: 5px; margin-bottom: 2px;text-align: center; background-color: #90BDFF; padding: 2px; }
+h3 { font-size : 1.5rem; border: 1px solid #000000; margin-top: 5px; margin-bottom: 2px;text-align: center; background-color: #90DDFF;padding: 2px; }
+h4 { font-size : 1rem; border: 1px solid #000000; margin-top: 5px; margin-bottom: 2px;text-align: center; background-color: #90EDFF; padding: 2px; }
+h5 { font-size : 0.75rem; border: 1px solid #000000; margin-top: 5px; margin-bottom: 2px;text-align: center; background-color: #90FDFF; padding: 2px; }
+h6 { font-size : 0.5rem; border: 1px solid #000000; margin-top: 5px; margin-bottom: 2px;text-align: center; background-color: #90BDFF; padding: 2px; }
+a {color: #416DFF; text-decoration: none}
+a:hover {background-color: #ddd; text-decoration: underline}
+pre {margin-bottom: 4px; padding:1rem;}
+pre, code {background-color: #EEE;}
+table {border: 1px #ddd solid; border-collapse: collapse}
+td, th {border: 1px #ddd solid; min-width: 80px}
+tr td {margin-left: 2px; margin-right: 2px }
+img, svg {display: block; margin-left: auto; margin-right: auto;}

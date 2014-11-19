@@ -1,0 +1,135 @@
+= Markup demo =
+
+=== Titles ===
+
+==== Title level 4
+===== Title level 5
+====== Title level 6
+
+=== Paragraph ===
+
+A paragraph is made by one or 
+more lines.
+
+A blank line separates them.
+
+=== Beautifiers ===
+
+Write documents using **bold**, //italic//, 
+__underline__ and ~~strike~~.
+
+**//__~~Nest them!~~__//**
+
+=== Subscript and superscript ===
+
+H_2O needs a subscript, 
+and ^{35}Br needs superscript.
+
+Do^{**use**} beautifiers if you please.
+
+=== Unordered lists ===
+
+- This is a list
+- Use hyphens to create
+  elements.
+  -- Use more hyphens to open a sublist
+- Easy!
+
+=== Orderer lists ===
+
+# Same as unordered list
+# Except you use sharp instead of hyphens
+  -- Sublist can change ordering
+# But same-level items can not
+
+=== Greek letters shortcut ===
+
+Y&ou m&ay w&an&t to use some gr&e&ek l&ett&ers.
+
+Do it using ``&`` + first letter of the letter name.
+
+=== Tables ===
+
+Write tables.
+
+| I | have | **no** | head! |
+
+And add fancy column names if you wish.
+
+| See | my | beautiful | header |
++-----+----+----------+--------+
+| and | my |    body   |   too  |
+
+=== Comments ===
+
+<<< You are not supposed to read this.
+<<< Can you confirm that you do not see this text?
+    Of course you can not!    
+>>>
+
+=== Links ===
+
+Would you like to:
+- Return to the [[index.html << home page]]?
+- [[Reload]] this page?
+- See sources at [[http://github.com/pastek-project/pastek-project
+                   .github.io]]
+
+[[reload]] :: [[demo.html]]
+
+=== Images ===
+
+Display beautiful images:
+
+[[https://avatars3.githubusercontent.com/u/5485293?s=64 || Pastek logo]]
+
+=== Display code ===
+```
+let pastek =
+    "awesome"
+```
+
+=== Use external program ===
+
+==== Example using ``dot`` ====
+
+This graph has been generated with ``dot`` program, just adding  ``%{ [cmd] 
+dot = "dot -Tsvg - -" %}`` anywhere in the document.
+
+%{ [cmd] dot = "dot -Tsvg"
+         plantuml = "plantuml -p -tsvg" %}
+
+%%%dot
+graph graphname {
+    a -- b -- c;
+    b -- d;
+}
+%%%
+
+==== Example using ``plantuml`` ====
+
+This diagram was generated using ``plantuml``.
+
+%%%plantuml
+@startuml
+Object <|-- ArrayList
+
+Object : equals()
+ArrayList : Object[] elementData
+ArrayList : size()
+
+@enduml
+%%%
+
+=== Write raw target code ===
+
+Any missing feature? You still can write pure raw html (or any targetted 
+format).
+
+{{{
+<div style="border:1px solid black;text-align:center">
+  <p style="color:red">
+    This div was directly written in <strong>raw</strong> html.
+  </p>
+</div>
+}}}

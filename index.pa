@@ -1,0 +1,27 @@
+[[https://avatars3.githubusercontent.com/u/5485293?s=256 || pastek]]
+
+== Pastek project documentation ==
+
+This is online documentation for project of pastek lightweight markup 
+language (2014.03.08 version).
+
+These few pages has been generated using 
+``pastek``.
+
+Click the //View Page Source// link to look at how the page was written in 
+``pastek`` (it will open a new tab).
+
+Pastek project [[source code]] is available on [[http://www.github.com]].
+
+//Please note that work is still in progress.//
+
+Summary:
+- [[cheatsheet.html << cheatsheet]]
+- [[demo.html << demo file]]
+- [[html_render.html << html engine]]
+
+Do not hesitate to visit: [[https://github.com/pastek-project]] to report 
+any problem with ``pastek`` or this website.
+
+[[source code]] :: [[https://github.com/pastek-project/pastek/]]
+[[1]] :: [[https://github.com/pastek-project/pastek/issues]]
